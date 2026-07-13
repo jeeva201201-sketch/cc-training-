@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>vowels</title>
+</head>
+<body>
+	<script>
+		function check() {		
+		var vo; 
+		vo=document.forms['frm']['t1'].value;
+		console.log(vo);
+        if (vo=='a'||'e'||'i'||'o'||'u') 
+        {
+         const text=document.getElementById("textbox");
+         text.value="vowel";
+        }
+        }
+
+	</script>
+<form method="get" name="frm">
+<div>
+	<label>Enter the character</label>
+	<input type="text" name="t1" placeholder="t1"><br>
+	<label>Result</label>
+	<input type="text" name="" id="textbox">
+	<input type="button" name=""  onclick="check()">
+</div>
+</form>
+</body>
+</html>

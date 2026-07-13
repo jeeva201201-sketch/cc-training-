@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Array Program</title>
+</head>
+<body>
+<script>
+var s='Shivashri ';
+var s1=new String("Academy");
+document.write(s);
+document.write(s1);
+console.log(s.length);
+console.log(s.trim().length);
+console.log(s.toUpperCase());
+console.log(s.toLowerCase());
+var a="hello wORld words";
+console.log(a.substring(3,5)); //3rd index to 5th index
+console.log(a.substr(3,5)); //from 3rd index to 5 characters
+console.log(a.indexOf("wor"));
+console.log(a.indexOf("words"));
+console.log(a.lastIndexOf("wor"));
+console.log(a.charAt(4));
+console.log(a.replace(/or/,"dd"));
+console.log(a.replace('or',"dd"));
+console.log(a.replace(/or/g,"dd"));
+console.log(a.replace(/or/i,"dd"));
+console.log(a);
+
+ar=a.split(" ");
+console.log(ar);
+
+ar=a.split("or");
+console.log(ar);
+
+ar=a.split("");
+console.log(ar)
+
+r=a.split(" ").reverse().join(" ");
+console.log(r);
+
+var a="shivahshri";
+
+var a="This is a Computer";
+r=a.split(" ").sort().join(" ");
+console.log(r);
+
+</script>
+</body>
+</html>

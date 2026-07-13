@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Mark Sheet UI</title>
+    <style>
+        /* Modern Reset & Base Styles */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gray: #f8fafc;
+            --text-main: #1e293b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Card Container */
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+        }
+
+        /* Form Body */
+        .card-body {
+            padding: 32px;
+        }
+
+        .grid-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .input-group input {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .input-group input[readonly] {
+            background-color: #f1f5f9;
+            color: #475569;
+            cursor: not-allowed;
+        }
+
+        /* Button Footer Section */
+        .card-footer {
+            background-color: #fbfbfb;
+            padding: 20px 32px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: #334155;
+        }
+
+        button:hover {
+            background: #f1f5f9;
+        }
+
+        /* Highlight Primary Action */
+        button.btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        button.btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .grid-form {
+                grid-template-columns: 1fr;
+            }
+            .card-footer {
+                justify-content: center;
+            }
+            button {
+                flex: 1 1 40%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Student Mark Sheet</h2>
+    </div>
+
+    <div class="card-body">
+        <div class="grid-form">
+            <div class="input-group">
+                <label>Roll Number</label>
+                <input type="text" placeholder="e.g. 101">
+            </div>
+            <div class="input-group">
+                <label>Student Name</label>
+                <input type="text" placeholder="Enter name">
+            </div>
+            
+            <div class="input-group"><label>Mathematics</label><input type="number"></div>
+            <div class="input-group"><label>Science</label><input type="number"></div>
+            <div class="input-group"><label>English</label><input type="number"></div>
+            <div class="input-group"><label>History</label><input type="number"></div>
+            <div class="input-group"><label>Geography</label><input type="number"></div>
+            
+            <div style="grid-column: span 2; margin: 10px 0; border-bottom: 1px solid var(--border-color);"></div>
+
+            <div class="input-group"><label>Total Marks</label><input type="text" readonly></div>
+            <div class="input-group"><label>Average %</label><input type="text" readonly></div>
+            <div class="input-group" style="grid-column: span 2;">
+                <label>Final Result</label>
+                <input type="text" readonly placeholder="Calculated automatically">
+            </div>
+        </div>
+    </div>
+
+    <div class="card-footer">
+        <button>New</button>
+        <button>View</button>
+        <button>Report</button>
+        <button class="btn-primary">Calculate</button>
+        <button class="btn-primary">Save Data</button>
+        <button style="color: #ef4444;">Close</button>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>payroll</title>
+	<style type="text/css">
+	body
+	{
+		background-image: url("pic5.jpg");
+	}		
+	.button{
+        color: white;
+		margin-top: 20px;
+		margin-left: 70px;
+		font-size: 25px;
+		height: 35px;
+		width: 150px;
+        display: inline;
+        border-radius: 15px;
+        background: gray;
+        border: 3px solid gray;
+        box-shadow: 0 7px white;
+	}
+	.button:hover{
+		color: gray;
+		background-color:white ;
+		border: 3px solid white ;
+	}
+	.button:active{
+		transform: translateY(7px);
+		box-shadow: 0 2px white;
+		background: gray;
+		color: white;
+	}
+	h1
+	{
+		color: white;
+		background: grey;
+		height: 50px;
+		width: 100%;
+		text-align: center;
+		background-position: center;
+        margin: 0px;
+	}
+   #e1
+	{	
+		font-size: 18px;
+		height: 50px;
+		width: 20px	 ;
+		display: inline;
+		margin-left: 100px;
+		margin-bottom: 30%;		
+	}
+	#e2
+	{
+		margin: 20px;
+		font-size: 18px;
+		margin-left:50px;
+        height: 50px;
+        width: 40px;
+        display: inline;
+	}
+	#e7
+	{
+		margin: 25px;
+		padding-top: 30px;
+		font-size: 18px;
+		margin-left:50px;
+        height: 50px;
+        width: 40px;
+        display: inline;
+        padding: 5 px;
+	}
+
+	#e3  
+	{  
+
+		font-size: 18px;
+		margin-left: 30%;
+		margin-right: 20px;
+	    margin-top: 40px;
+        height: 50px;
+        width: 40px;
+        display: inline;
+        padding: 10px;
+	}
+	#e4
+	{
+	    text-align: center;
+		font-size: 22px;
+		margin-left: 30%;
+		margin-right: 20px;
+        height: 50px;
+        width: 40px;
+        display: inline;
+        line-height: 50%;
+	}
+	#e6
+	{
+	   background: lightgray;
+       padding: 5px;
+	   border: 3px solid grey;
+	   margin: 20px;
+	}
+	#e9
+	{
+		margin-top: 50px;
+		background: darkgray;
+		border: 3px solid grey;
+	   margin-left: 20%;
+	   margin-right: 20%;
+	}
+	#e10
+	{
+		height: 9px;
+		padding: 5px;
+	    margin-left: 67px;
+	    border-radius: 5px;
+
+	}
+	#e11
+	{
+	margin: 10px;
+	}
+	#e12
+	{
+		margin-left: 85px;
+		 border-radius:5px ;
+	}
+	#e13
+	{
+		margin-left: 79px;
+		 border-radius:5px ;
+	}
+	#e14
+	{
+		margin-left: 79px;
+		 border-radius:5px ;
+	}
+    #e15
+    {
+    	margin-left: 10px;
+    	 border-radius:5px ;
+    }
+    #e18
+    {
+    	padding-top: 20px;
+    	margin-left: 2px;
+    	 border-radius:5px ;
+    }
+    #e19
+    {
+    	margin-bottom: 20px;
+    	 border-radius:5px ;
+    }
+    #e20
+    {
+    	border-radius: 5px;
+    	background: whitesmoke;
+    }
+
+</style>
+<script>
+function Calc()
+	{
+      var ma,hra,da,cca,pf,lip,basic,gross,totalded,net,hra1,da1,cca1,pf1,lip1,ma1;
+      // console.log("f);
+      basic=document.forms['frm']['Basic'].value;
+      hra=parseInt(basic)*0.20;
+      da=parseInt(basic)*0.30;
+      cca=300;
+      pf=parseInt(basic)*0.12;
+      lip=200;
+      ma=1250;
+      gross=parseInt(basic)+hra+da+cca;
+      totalded=pf+lip;
+      netsalary=gross-totalded;
+      document.forms['frm']['HRA'].value=hra;
+      document.forms['frm']['DA'].value=da;
+      document.forms['frm']['MA'].value=ma;
+      document.forms['frm']['CCA'].value=cca;
+      document.forms['frm']['PF'].value=pf;
+      document.forms['frm']['LIP'].value=lip;
+      document.forms['frm']['Gross'].value=gross;
+      document.forms['frm']['TD'].value=totalded;
+      document.forms['frm']['NET'].value=netsalary;
+      return;
+	}
+</script>
+</head>
+<body>
+<form method="get" name="frm">
+<div id="e9">	
+<div id="e6">
+<h1>PAYROLL CALCULATIONS</h1>
+</div>
+<h2 id="e2">Employee No</h2>
+<input type="text" placeholder="" id="e20" name="">
+<h2 id="e2">Employee Name</h2>
+<input type="number" name="" id="e20">
+<div id="e6">
+<div id="e11">
+<h2 id="e3">Basic Salary</h2>
+<input type="number" placeholder="" id="e15" name="Basic">
+</div>
+<div id="e11">
+<h2 id="e3">DA </h2>
+<input type="number" id="e14" name="DA">
+</div>
+<div id="e11">
+<h2 id="e3">HRA</h2>
+<input type="number"  id="e10" name="HRA">
+</div>
+<div id="e11">
+<h2 id="e3">MA</h2>
+<input type="number"  id="e10" name="MA">
+</div>
+<div id="e11">
+<h2 id="e3">CCA</h2>
+<input type="number" id="e10" name="CCA">
+</div>
+<div id="e11">
+<h2 id="e3">PF </h2>
+<input type="number"  id="e12" name="PF">
+</div>
+<div id="e11">
+<h2 id="e3">LIP</h2>
+<input type="number"  id="e13" name="LIP">
+</div>
+</div>
+<div id="e6">
+	<h2 id="e7">Gross</h2>
+	<input type="number" id="e20" name="Gross">	
+	<h2 id="e7">Total Dedection</h2>
+	<input type="number" id="e20" name="TD">
+	<div id="e18">
+	<h2 id="e7">Net Salary</h2>
+	<input type="number" id="e20" name="NET">
+	</div>
+</div>
+<div id="e6">
+<div id="e19">
+	<input type="reset" value="New" class="button" name="">
+	<input type="button" value="Calculate" class="button" name="" onclick="Calc();">
+	<input type="button" value="Exit" class="button" name="" onclick="window.close();">
+	</div>
+</div>
+</div>
+</div>
+</form>
+</body>
+</html>

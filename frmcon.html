@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Form Controls</title>
+<script type="text/javascript">
+function disp()
+{
+	alert("Welcome");
+	return;
+}	
+</script>
+
+</head>
+<body>
+	<form method="get" action="welcome.html">
+		
+	
+<table border="1">
+
+<tr>
+	<th><label>User Name :</label></th>
+	<td><input type="text" name="un" required minlength="5" placeholder="User Name" /></td>
+</tr>	
+<tr>
+	<th><label>Password :</label></th>
+	<td><input type="password" name="pw" dir="rtl" /></td>
+</tr>	
+
+<tr>
+	<th><label>Age :</label></th>
+	<td><input type="number" name="age" min="18"  max="60" /></td>
+</tr>	
+
+<tr>
+	<!-- shiva@gmail.com -->
+	<th><label>Email :</label></th>
+	<td><input type="email" name="email" /></td>
+</tr>	
+
+<tr>
+	
+	<th><label>Phone :</label></th>
+	<td><input type="text" value="+91" size="3" readonly><input type="text" name="phone" pattern="[6-9]{1}[0-9]{9}" /></td>
+</tr>	
+
+
+<tr>
+	<th><label>File Load :</label></th>
+	<td><input type="file" name="fi" multiple accept="image/*" /></td>
+</tr>	
+
+<tr>
+	<th><label>Date Of Birth :</label></th>
+	<td><input type="date" name="dob" /></td>
+</tr>	
+
+<tr>
+	<th><label>Gender :</label></th>
+	<td><input type="radio" name="g1" />Male
+	<input type="radio" name="g1" />Female
+	<input type="radio" name="g1" />Others
+	</td>
+</tr>
+
+<tr>
+	<th><label>Background Color :</label></th>
+	<td><input type="color" name="col" /></td>
+</tr>	
+
+<tr>
+	<!-- http:gmail.com -->
+
+	<th><label>Domain Name :</label></th>
+	<td><input type="url" name="ul" /></td>
+</tr>	
+
+<tr>
+	<th><label>Skills :</label></th>
+	<td>
+	<input type="checkbox" name="c1" />Java	
+	<input type="checkbox" name="c1" />Python	
+	<input type="checkbox" name="c1" />MySql
+	<input type="checkbox" name="c1" />Dotnet	
+	</td>
+</tr>	
+
+
+<tr>
+	<th><label>Qualification :</label></th>
+	<td>
+		<select>
+		<option>B.E</option>	
+		<option>M.E</option>	
+		<option>M.C.A</option>	
+		<option>M.Sc</option>	
+		</select>
+</td>
+</tr>	
+<tr>
+	<th><label>Search Text :</label></th>
+	<td><input type="search" name="se1"  /></td>
+</tr>	
+
+<tr>
+	<th><label>Range :</label></th>
+	<td><input type="range" name="ran" min="100" max="1000" value="150" /></td>
+</tr>	
+
+<tr>
+	<th><label>Time :</label></th>
+	<td><input type="time" name="ti" /></td>
+</tr>	
+
+<tr>
+	<th><label>Week :</label></th>
+	<td><input type="week" name="w1" /></td>
+</tr>	
+<tr>
+	<th><label>Month :</label></th>
+	<td><input type="month" name="m1" /></td>
+</tr>	
+
+<tr>
+	<th><label>Date Time :</label></th>
+	<td><input type="datetime-local" name="loc" /></td>
+</tr>
+<tr>
+	<th><label>Group :</label></th>
+	<td>
+	<fieldset>
+	<legend>Parents Name</legend>	
+	<label>Father Name</label><input type="text" name="fna">
+	<label>Mother Name</label><input type="text" name="mna">
+	</fieldset>	
+
+	</td>
+</tr>	
+
+<tr>
+	<th><label>Feed Back :</label></th>
+	<td><textarea rows="5" cols="50"></textarea></td>
+</tr>	
+
+<tr>
+	<th><label>Data List :</label></th>
+	<td>
+		<input list="college">
+		<datalist id="college">
+		<option>MIT</option>
+		<option>VIT</option>
+		<option>Sona</option>
+		</datalist>
+	</td>
+</tr>	
+
+<tr>
+	<th><label>Selection:</label></th>
+	<td>
+		<select>
+			<optgroup label="Hardware">
+			<option value="Com1">Keyboard</option>	
+			<option value="Com2">Mouse</option>	
+			<option value="Com3">Monitor</option>	
+			</optgroup>
+			<optgroup label="Software">
+			<option value="sof1">Java</option>	
+			<option value="sof2">Python</option>	
+			<option value="sof3">Dot net</option>	
+			</optgroup>
+	</select>
+
+	</td>
+</tr>
+
+
+
+<tr>
+	<th><label>Show :</label></th>
+	<td><input type="button" name="b1" value="Button Input" onclick="disp();" /></td>
+</tr>
+
+
+
+
+<tr>
+	<th><label>Submit :</label></+th>
+	<td><input type="submit" name="s1" value="Click" /></td>
+</tr>	
+
+<tr>
+	<th><label>Clear</label></th>
+	<td><input type="reset" name="r1" value="Clear" /></td>
+</tr>	
+
+</table>
+</form>
+</body>
+</html>

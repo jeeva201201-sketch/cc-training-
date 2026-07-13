@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Element</title>
+	<style type="text/css">
+	h1:hover
+	{
+		color: blueviolet;
+		display: none;
+	}	
+	input:hover
+	{
+		background-color: pink;
+	}
+	input:focus
+	{
+		box-shadow: 10px 10px 15px green;
+	}
+	#chk+label
+	{
+		color: red;
+	}
+	#chk:checked+label
+	{
+		color: green;
+	}
+	</style>
+</head>
+<body>
+<h1>Heading 1 </h1>
+<label>Name</label><input type="text" name="t1">
+<label>City</label><input type="text" name="t2">
+<input type="checkbox" name="c1" id="chk">
+<label>Accept Terms</label>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Sheet UI</title>
+    <style>
+        /* General Reset */
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Main Container */
+        .app-container {
+            display: flex;
+            flex-direction: row; /* Sidebar left, Content right */
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 120px;
+        }
+
+        .sidebar button {
+            background: white;
+            border: 2px solid #2c3e50;
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .sidebar button:hover {
+            background: #2c3e50;
+            color: white;
+        }
+
+        /* Form Area Styling */
+        .form-card {
+            background: white;
+            border: 2px solid #2c3e50;
+            padding: 25px;
+            flex-grow: 1;
+            box-shadow: 5px 5px 0px #2c3e50;
+        }
+
+        .form-card h2 {
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Grid for Inputs */
+        .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Full width for specific rows */
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* Responsive Media Query */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column; /* Stack sidebar on top of form */
+            }
+
+            .sidebar {
+                flex-direction: row; /* Buttons move to a horizontal row */
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .sidebar button {
+                flex: 1 1 30%; /* Buttons grow to fill space on mobile */
+                font-size: 0.8rem;
+            }
+
+            .grid-form {
+                grid-template-columns: 1fr; /* Single column layout for small screens */
+            }
+
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <button>New</button>
+        <button>Calc</button>
+        <button>Save</button>
+        <button>View</button>
+        <button>Report</button>
+        <button>Close</button>
+    </aside>
+
+    <main class="form-card">
+        <h2>MARK SHEET</h2>
+        <div class="grid-form">
+            <div class="input-group"><label>Roll No:</label><input type="text"></div>
+            <div class="input-group"><label>Name:</label><input type="text"></div>
+            
+            <div class="input-group"><label>Mark 1:</label><input type="number"></div>
+            <div class="input-group"><label>Mark 2:</label><input type="number"></div>
+            
+            <div class="input-group"><label>Mark 3:</label><input type="number"></div>
+            <div class="input-group"><label>Mark 4:</label><input type="number"></div>
+            
+            <div class="input-group"><label>Mark 5:</label><input type="number"></div>
+            
+            <div class="input-group"><label>Total:</label><input type="text" readonly style="background: #f9f9f9;"></div>
+            <div class="input-group"><label>Average:</label><input type="text" readonly style="background: #f9f9f9;"></div>
+            <div class="input-group"><label>Result:</label><input type="text" readonly style="background: #f9f9f9;"></div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

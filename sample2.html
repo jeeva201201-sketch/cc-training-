@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Mark Sheet</title>
+    <style>
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); padding: 20px; }
+
+        .app-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        header {
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+        }
+
+        /* --- DESKTOP VIEW (Default) --- */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr; /* Two columns */
+            gap: 1px;
+            background: var(--border); /* Creates a natural divider line */
+        }
+
+        .input-section, .result-section {
+            background: var(--card);
+            padding: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .full-width { grid-column: span 2; }
+
+        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #6b7280; text-transform: uppercase; }
+        input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
+        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+        input[readonly] { background: #f9fafb; font-weight: bold; color: var(--primary); }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button.main-btn { background: var(--primary); color: white; border: none; }
+        button:hover { background: #f9fafb; }
+        button.main-btn:hover { background: #1d4ed8; }
+
+        /* --- MOBILE VIEW (Media Query) --- */
+        @media (max-width: 600px) {
+            body { padding: 0; background: white; }
+            .app-wrapper { box-shadow: none; border-radius: 0; }
+            
+            /* Stack columns vertically */
+            .main-content { grid-template-columns: 1fr; background: white; }
+            
+            /* Add some visual separation between info and marks */
+            .result-section { border-top: 8px solid var(--bg); margin-bottom: 100px; }
+
+            /* Modern Mobile Buttons: Sticky at the bottom */
+            .actions {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: row;
+                padding: 15px;
+                border-top: 1px solid var(--border);
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+                z-index: 100;
+            }
+
+            .actions button { flex: 1; font-size: 12px; padding: 10px 5px; }
+            .actions .main-btn { flex: 2; } /* Make Calc button bigger on mobile */
+            
+            .grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <header>
+        <h2>Mark Entry System</h2>
+    </header>
+
+    <div class="main-content">
+        <div class="input-section">
+            <div class="grid">
+                <div class="full-width">
+                    <label>Student Name</label>
+                    <input type="text" placeholder="e.g. Alex Smith">
+                </div>
+                <div>
+                    <label>Roll No</label>
+                    <input type="text" placeholder="101">
+                </div>
+                <div>
+                    <label>Mark 1</label>
+                    <input type="number">
+                </div>
+                <div>
+                    <label>Mark 2</label>
+                    <input type="number">
+                </div>
+                <div>
+                    <label>Mark 3</label>
+                    <input type="number">
+                </div>
+                <div>
+                    <label>Mark 4</label>
+                    <input type="number">
+                </div>
+                <div>
+                    <label>Mark 5</label>
+                    <input type="number">
+                </div>
+            </div>
+        </div>
+
+        <div class="result-section">
+            <label>Calculated Results</label>
+            <div class="grid">
+                <div><label>Total</label><input type="text" readonly value="0"></div>
+                <div><label>Average</label><input type="text" readonly value="0%"></div>
+            </div>
+            <label>Grade</label>
+            <input type="text" readonly value="Pending" class="full-width">
+
+            <div class="actions">
+                <button class="main-btn">Calculate & Save</button>
+                <button>New Record</button>
+                <button>View Reports</button>
+                <button style="color: red; border-color: #fee2e2;">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

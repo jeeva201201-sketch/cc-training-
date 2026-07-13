@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>mark2</title>
+	<style type="text/css">
+	#header
+	{
+		text-align: center;
+		color: black;
+		line height: 400px;
+	}
+    #h2
+    {
+    	font-size: 16px;
+    	display: inline;
+    	margin: 20px;	
+    }
+    #d1
+    {
+    	font-size: 20px;
+    	margin-left: 400px;
+    	margin-top: 10px;
+    	
+    }
+     #div1
+    {
+    	font-size: 20px;
+    	margin: 10px;
+    	border: 3px solid lavender;
+        padding: 10px;
+    }
+     #i2
+    {
+        
+        border-radius: 8PX;
+
+    }
+     #i3
+    {
+        margin-left: 450px;
+       
+
+    }
+    #i6
+    {
+        margin-left: 350px;
+       
+
+    }
+    #ii4
+    {
+    	margin-left: 150px;
+    }
+      #ii1
+    }
+    {
+        margin-left: 500px;
+       border-radius: 8PX;
+
+    }
+     #ii2
+    {
+        margin-left: 355px;
+       border-radius: 8PX;
+
+    }
+      #ii3
+    {
+        margin-left: 305px;
+       border-radius: 8PX;
+
+    }
+     #df
+    {
+    	margin-left: 50px;
+    }
+      #d3
+    {
+    	margin-left:450px ;
+    	margin-top: 20px;
+        margin-bottom: 30px;
+        width: 90px;
+    	height: 35px;
+    }
+     #d2
+    {
+    	margin-top: 40px;
+    	margin-left: 70px;
+    	width: 90px;
+        height: 35px;
+    }
+</style>
+<script>
+function markCalc()
+{
+var t,e,m,s,h,tot,avg;
+t=document.forms['frm']['t3'].value;
+e=document.forms['frm']['t4'].value;
+m=document.forms['frm']['t5'].value;
+s=document.forms['frm']['t6'].value;
+h=document.forms['frm']['t7'].value;
+tot=parseInt(t)+parseInt(e)+parseInt(m)+parseInt(s)+parseInt(h);
+avg=tot/5;
+document.forms['frm']['t8'].value=tot;
+document.forms['frm']['t9'].value=avg;
+if (avg <=50)
+{
+    document.forms['frm']['t10'].value='fail';
+
+}
+else
+{
+    document.forms['frm']['t10'].value='pass';
+
+}
+return;
+}
+</script>
+
+</head>
+
+<body>
+<form method="get" name="frm">
+<div id="df">
+   <div id="div1">     
+<h1 id= "header">Mark Sheet</h1>
+</div>	
+<div id="div1">
+<label id="i3">Roll Number :</label>
+<input id ="i2" type="number"  placeholder="" name="t1">
+
+	<label> Name :</label>
+<input id ="i2" type="text"  placeholder=""  name="t2">
+</div>
+<div id="div1">
+<div id="d1">	
+<label  id ="ii4">Mark 1 :   </label>
+<input id ="ii1" type="number"  placeholder="" name="t3">
+</div>
+<div id="d1">	
+<label id ="ii4">Mark 2 :   </label>
+<input id ="ii1" type="number"  placeholder="" name="t4" >
+</div>
+<div id="d1">	
+<label id ="ii4" >Mark 3 :   </label>
+<input id ="ii1" type="number"  placeholder="" name="t5" >
+</div>
+<div id="d1">	
+<label id ="ii4">Mark 4 :   </label>
+<input id ="ii1" type="number"  placeholder=""  name="t6">
+</div>
+<div id="d1">	
+<label id ="ii4">Mark 5 :   </label>
+<input id ="ii1" type="number"  placeholder=""  name="t7">
+</div>
+<div id="div1">
+<label id="i6">Total :</label>
+<input id ="i2" type="number"  placeholder="" name="t8">
+
+    <label> Average :</label>
+<input id ="i2" type="number"  placeholder="" name="t9">
+<label> Result:</label>
+<input id ="i2" type="text"  placeholder="" name="t10">
+</div>
+</div>
+<div id="div1">
+<button id ="d3" type="reset">New</button>
+<input type="button" id ="d2" value="Calc" onclick="markCalc();">
+<input type="button" id ="d2" value="Exit" onclick="window.close();">
+</div>
+</div>
+</form>
+</body>
+</html>

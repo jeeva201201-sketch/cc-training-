@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Mark Sheet</title>
+    <style>
+        /* This imports a handwriting-style font */
+        @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap');
+
+        body {
+            background-color: #fff;
+            font-family: 'Architects Daughter', cursive;
+            color: #1a2a6c; /* Blue ink color */
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* 1. THE MAIN CONTAINER */
+        .wrapper {
+            display: flex;
+            flex-direction: row; /* Sidebar on left */
+            gap: 15px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* 2. THE SIDEBAR (Buttons) */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar button {
+            font-family: 'Architects Daughter', cursive;
+            background: none;
+            border: 2px solid #1a2a6c;
+            padding: 5px 15px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            /* Making buttons look hand-drawn */
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        }
+
+        /* 3. THE MAIN BOX (Mark Sheet) */
+        .main-box {
+            border: 3px solid #1a2a6c;
+            padding: 20px;
+            flex-grow: 1;
+            /* Wobbly hand-drawn border effect */
+            border-radius: 2% 5% 4% 3% / 1% 1% 2% 4%;
+            position: relative;
+        }
+
+        .title {
+            text-align: right;
+            text-decoration: underline;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .row label {
+            font-size: 1.3rem;
+        }
+
+        /* The little boxes you drew */
+        .box-input {
+            border: 2px solid #1a2a6c;
+            width: 80px;
+            height: 35px;
+            background: transparent;
+            outline: none;
+            text-align: center;
+            font-family: 'Architects Daughter', cursive;
+            border-radius: 5px 10px 5px 10px / 10px 5px 10px 5px;
+        }
+
+        .name-input {
+            width: 150px;
+        }
+
+        /* 4. THE MEDIA QUERY (The "Magic" change) */
+        @media (max-width: 500px) {
+            .wrapper {
+                flex-direction: column; /* Stack sidebar on top */
+            }
+
+            .sidebar {
+                flex-direction: row; /* Buttons go side-by-side */
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .main-box {
+                padding: 10px;
+            }
+
+            .row {
+                flex-direction: column; /* Label on top of box */
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .box-input {
+                width: 100%; /* Box stretches to fill screen */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar">
+        <button>NEW</button>
+        <button>CALC</button>
+        <button>SAVE</button>
+        <button>VIEW</button>
+        <button>REPORT</button>
+        <button>CLOSE</button>
+    </div>
+
+    <div class="main-box">
+        <div class="title">mark sheet</div>
+
+        <div class="row">
+            <label>Roll no:</label>
+            <input type="text" class="box-input">
+            <label>Name:</label>
+            <input type="text" class="box-input name-input">
+        </div>
+
+        <div class="row">
+            <label>mark 1</label>
+            <input type="text" class="box-input">
+            <label>mark 2</label>
+            <input type="text" class="box-input">
+        </div>
+
+        <div class="row">
+            <label>mark 3</label>
+            <input type="text" class="box-input">
+            <label>mark 4</label>
+            <input type="text" class="box-input">
+        </div>
+
+        <div class="row">
+            <label>mark 5</label>
+            <input type="text" class="box-input">
+        </div>
+
+        <div class="row">
+            <label>Total</label>
+            <input type="text" class="box-input">
+            <label>Average</label>
+            <input type="text" class="box-input">
+        </div>
+
+        <div class="row">
+            <label>Result</label>
+            <input type="text" class="box-input">
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

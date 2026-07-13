@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>payroll</title>
+	<style type="text/css">
+
+	#header
+	{
+		text-align: center;
+		color: black;
+		line height: 400px;
+	}
+    #h2
+    {
+    	font-size: 16px;
+    	display: inline;
+    	margin: 20px;	
+    }
+    #d1
+    {
+    	font-size: 20px;
+    	margin-left: 250px;
+    	margin-top: 10px;
+    	
+    }
+     #div1
+    {
+    	font-size: 20px;
+    	margin: 10px;
+    	border: 3px solid lavender;
+        padding: 10px;
+    }
+    #df
+    {
+        width: 1050px;
+        border: 3px dotted gold;
+    }
+     #d3    
+     
+    {
+    	margin-left:250px ;
+    	margin-top: 20px;
+        margin-bottom: 30px;
+        width: 90px;
+    	height: 35px;
+    }
+     #d2
+    {
+    	margin-top: 40px;
+    	margin-left: 60px;
+    	width: 90px;
+        height: 35px;
+
+        border-radius: 15px;
+  
+    }
+     #h3
+    {
+    	font-size: 16px;
+    	display: inline;
+    	margin-top: 40px;
+    	
+    }
+    #i1
+    {
+       
+        border-radius: 8PX;
+        margin-left: 65px;
+
+    }
+     #i2
+    {
+        
+        border-radius: 8PX;
+
+    }
+     #i3
+    {
+        margin-left: 100px;
+       
+
+    }
+     #ii1
+    {
+        margin-left: 150px;
+       border-radius: 8PX;
+
+    }
+     #ii2
+    {
+        margin-left: 85px;
+       border-radius: 8PX;
+
+    }
+      #ii3
+    {
+        margin-left: 125px;
+       border-radius: 8PX;
+
+    }
+     #ii4
+    {
+        margin-left: 50px;
+       border-radius: 8PX;
+
+    }
+    #ii5
+    {
+        margin-left: 60px;
+       border-radius: 8PX;
+
+    }
+     #df
+    {
+    	margin-left: 200px;
+    }
+    button 
+    {
+        border-radius: 15px;
+    }
+    body
+    {
+        background-color: black;
+    }
+    div
+    {
+        background-color: lightgray;
+    }
+    label
+    {
+        color: black;
+
+    }
+
+
+
+	</style>
+
+    <script>
+function Calc()
+    {
+      var ma,hra,da,cca,pf,lip,basic,gross,totalded,net,hra1,da1,cca1,pf1,lip1,ma1;
+      // console.log("f);
+      basic=document.forms['frm']['bs'].value;
+      hra=parseInt(basic)*0.20;
+      da=parseInt(basic)*0.30;
+      cca=300;
+      pf=parseInt(basic)*0.12;
+      lip=200;
+      
+      gross=parseInt(basic)+hra+da+cca;
+      totalded=pf+lip;
+      netsalary=gross-totalded;
+      document.forms['frm']['hra'].value=hra;
+      document.forms['frm']['DA'].value=da;
+      
+      document.forms['frm']['CCA'].value=cca;
+      document.forms['frm']['PF'].value=pf;
+      document.forms['frm']['LIP'].value=lip;
+      document.forms['frm']['Gross'].value=gross;
+      document.forms['frm']['TD'].value=totalded;
+      document.forms['frm']['NET'].value=netsalary;
+      return;
+    }</script>
+</head>
+<body>
+    <form method="get" name="frm">
+    <div id="df">
+   <div id="div1">     
+<h1 id= "header">PAYROLL CALCULATION</h1>
+</div>	
+<div id="div1">
+<label id="i3">Employee Number :</label>
+<input id ="i2" type="number"  placeholder="" >
+
+	<label>Employee Name :</label>
+<input id ="i2" type="text"  placeholder="" >
+</div>
+<div id="div1">
+<div id="d1">	
+<label >Basic Salary :   </label>
+<input id ="ii1" type="number"  placeholder="" name="bs" >
+</div>
+<div id="d1">
+<label>  Dearness Allowance  :</label>
+<input id ="ii2"type="number"  placeholder="" name="DA">
+</div>
+<div id="d1">
+<label>House Rent Allowance :</label>
+<input id ="i1" type="number"  placeholder="" name="hra" >
+</div>
+<div id="d1">
+<label>Conveyence Allowance :</label>
+<input id ="ii5" type="number"  placeholder="" name="CCA">
+</div>
+<div id="d1">
+<label>Provident Fund :</label>
+<input id ="ii3" type="number"  placeholder="" name="PF" >
+</div>
+<div id="d1">
+<label>Life Insurance Preimium :</label>
+<input id ="ii4" type="number"  placeholder="" name="LIP">
+</div>
+</div>
+<div id="div1">
+    <label>Gross Salary :</label>
+<input id ="i2"type="number"  placeholder="" name="Gross" >
+
+	<label>Total Deducation :</label>
+<input id ="i2" type="number"  placeholder="" name="TD">
+<label>Net Salary :</label>
+<input id ="i2" type="number"  placeholder="" name="NET">
+</div>
+<div id="div1">
+ 
+ <button id ="d3" >New</button>
+<input id="d2" type="button" value="Calculate" class="button" name="" onclick="Calc();">
+<input type="button" id ="d2" value="Exit" onclick="window.close();">
+
+</div>
+</div>
+
+</form>
+</body>
+</html>

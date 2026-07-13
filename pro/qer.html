@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthLink - Your Health Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (Used for better iconography) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet CSS for Map Display (OpenStreetMap) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJdK09/r3W9j1Z7nU8y0t3fT+gW7Pz10e4+19A="
+     crossorigin=""/>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Simple transition for screen switching */
+        .screen {
+            animation: fadeIn 0.3s ease-in-out;
+            min-height: calc(100vh - 56px); /* Ensure main content fills the screen minus nav height */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .nav-item.active svg, .nav-item.active span {
+            color: #3B82F6; /* blue-500 */
+        }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Style for the Leaflet map container */
+        #hospital-map {
+            height: 250px; /* Increased height for better view */
+            width: 100%;
+            border-radius: 0.5rem; /* rounded-lg equivalent */
+        }
+        /* Custom styling for SOS Progress Ring */
+        #sos-progress-ring {
+            transition: stroke-dashoffset 0.1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            /* Stroke-dasharray = Circumference of the circle (2 * PI * 100 approx 628.3) */
+            stroke-dasharray: 628.3; 
+            stroke-dashoffset: 628.3; /* Initially hidden */
+        }
+        /* Custom styling for the notification toggle switch */
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3B82F6;
+        }
+        .toggle-checkbox:checked + .toggle-label:before {
+            transform: translateX(100%);
+            border-color: #3B82F6;
+        }
+        .toggle-label {
+            transition: background-color 0.4s ease;
+        }
+        .toggle-label:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 9999px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: transform 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app-container" class="max-w-md mx-auto bg-white shadow-lg h-screen flex flex-col">
+        <main id="main-content" class="flex-1 overflow-y-auto pb-20">
+            <!-- HOME SCREEN -->
+            <div id="home-screen" class="screen p-6">
+                <header class="flex justify-between items-start">
+                    <div class="flex-1 mr-4">
+                        <h1 class="text-3xl font-bold text-gray-900" data-lang-key="welcome_title">Welcome to HealthLink</h1>
+                        <p class="text-gray-500 mt-1" data-lang-key="welcome_subtitle">Your complete healthcare companion</p>
+                    </div>
+                    <div class="relative">
+                         <!-- IMPROVEMENT: Using Lucide icon for language -->
+                         <button id="language-button" type="button" title="Change Language" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none text-2xl">
+                            <i data-lucide="globe" class="w-6 h-6 text-blue-500"></i>
+                        </button>
+                        <div id="language-panel" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu" aria-orientation="vertical" aria-labelledby="language-button">
+                            <div class="py-1" role="none">
+                                <a href="#" class="language-option text-gray-700 block px-4 py-2 text-sm" data-lang="pa">ਪੰਜਾਬੀ</a>
+                                <a href="#" class="language-option text-gray-700 block px-4 py-2 text-sm" data-lang="en">English</a>
+                                <a href="#" class="language-option text-gray-700 block px-4 py-2 text-sm" data-lang="hi">हिंदी</a>
+                                <a href="#" class="language-option text-gray-700 block px-4 py-2 text-sm" data-lang="ta">தமிழ்</a>
+                                <a href="#" class="language-option text-gray-700 block px-4 py-2 text-sm" data-lang="te">తెలుగు</a>
+                                <a href="#" class="language-option text-gray-700 block px-4 py-2 text-sm" data-lang="bn">বাংলা</a>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <!-- Cards using Lucide Icons for better aesthetic and scalability -->
+                    <div id="home-teleconsultation-card" class="bg-teal-50 p-4 rounded-xl border border-teal-100 flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <i data-lucide="video" class="w-6 h-6 text-teal-500"></i>
+                            </div>
+                             <h3 class="font-semibold text-gray-800 mt-3" data-lang-key="teleconsultation_title">Teleconsultation</h3>
+                             <p class="text-xs text-gray-500 mt-1" data-lang-key="teleconsultation_subtitle">Consult with top doctors</p>
+                        </div>
+                    </div>
+                    <div id="home-symptoms-card" class="bg-red-50 p-4 rounded-xl border border-red-100 flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <i data-lucide="heart-pulse" class="w-6 h-6 text-red-500"></i>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-red-400"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mt-3" data-lang-key="symptoms_title">Check Symptoms</h3>
+                            <p class="text-xs text-gray-500 mt-1" data-lang-key="symptoms_subtitle">Get health insights instantly</p>
+                        </div>
+                    </div>
+                    <div id="home-hospitals-card" class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <i data-lucide="map-pin" class="w-6 h-6 text-blue-500"></i>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-blue-400"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mt-3" data-lang-key="hospitals_title">Nearby Hospitals</h3>
+                            <p class="text-xs text-gray-500 mt-1" data-lang-key="hospitals_subtitle">Find medical facilities near you</p>
+                        </div>
+                    </div>
+                    <div id="home-records-card" class="bg-green-50 p-4 rounded-xl border border-green-100 flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <i data-lucide="file-text" class="w-6 h-6 text-green-500"></i>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-green-400"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mt-3" data-lang-key="records_title">My Records</h3>
+                            <p class="text-xs text-gray-500 mt-1" data-lang-key="records_subtitle">Access your medical history</p>
+                        </div>
+                    </div>
+                    <div id="home-medicines-card" class="bg-purple-50 p-4 rounded-xl border border-purple-100 flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <i data-lucide="pill" class="w-6 h-6 text-purple-500"></i>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-purple-400"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mt-3" data-lang-key="medicines_title">Medicine Info</h3>
+                            <p class="text-xs text-gray-500 mt-1" data-lang-key="medicines_subtitle">Search medications & usage</p>
+                        </div>
+                    </div>
+                    <div id="home-sos-card" class="bg-red-100 p-4 rounded-xl border border-red-200 flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-red-500"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 mt-3" data-lang-key="sos_title">Emergency SOS</h3>
+                            <p class="text-xs text-gray-500 mt-1" data-lang-key="sos_subtitle">One-tap emergency assistance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TELECONSULTATION SCREEN -->
+            <div id="teleconsultation-screen" class="screen hidden">
+                <header class="p-6">
+                    <h1 class="text-3xl font-bold text-gray-900" data-lang-key="teleconsultation_page_title">Teleconsultation</h1>
+                    <p class="text-gray-500 mt-1" data-lang-key="teleconsultation_page_subtitle">Find and book appointments with doctors</p>
+                </header>
+                <div class="px-6">
+                    <div class="relative">
+                        <input id="doctor-search-input" type="text" data-lang-placeholder="search_doctors_placeholder" placeholder="Search doctors or specialities..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    </div>
+                </div>
+                
+                <div class="px-6 mt-6">
+                    <h2 class="text-xl font-bold text-gray-800" data-lang-key="consult_by_concern_title">Consult by Health Concern</h2>
+                    <div id="health-concerns-grid" class="grid grid-cols-3 gap-3 mt-4 text-center">
+                        <!-- Content rendered by renderHealthConcerns() -->
+                    </div>
+                </div>
+
+                <div class="px-6 mt-8">
+                     <h2 class="text-xl font-bold text-gray-800" data-lang-key="find_doctors_by_speciality_title">Find Doctors by Speciality</h2>
+                     <div id="doctors-list" class="mt-4 space-y-4">
+                         <!-- Content rendered by renderDoctors() -->
+                        </div>
+                </div>
+            </div>
+
+            <!-- HOSPITALS SCREEN -->
+            <div id="hospitals-screen" class="screen hidden">
+                <header class="p-6">
+                    <h1 class="text-3xl font-bold text-gray-900" data-lang-key="hospitals_page_title">Nearby Hospitals</h1>
+                    <p class="text-gray-500 mt-1" data-lang-key="hospitals_page_subtitle">Find medical facilities close to you</p>
+                </header>
+                <div class="px-6">
+                    <!-- Map Container -->
+                    <div id="hospital-map" class="mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <p class="text-gray-500" data-lang-key="map_loading">Loading Map...</p>
+                    </div>
+
+                    <div class="relative">
+                        <input id="hospital-search-input" type="text" data-lang-placeholder="search_hospitals_placeholder" placeholder="Search hospitals or specialities..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    </div>
+                    <!-- Hospital/Specialist Filter Buttons -->
+                    <div id="hospital-filter-buttons" class="flex space-x-2 mt-4 overflow-x-auto pb-2">
+                        <button class="px-4 py-2 text-sm font-semibold bg-blue-500 text-white rounded-full flex-shrink-0" data-lang-key="filter_all">All</button>
+                        <button class="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-700 rounded-full flex-shrink-0" data-lang-key="filter_cardiology">Cardiology</button>
+                        <button class="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-700 rounded-full flex-shrink-0" data-lang-key="filter_emergency">Emergency</button>
+                        <button class="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-700 rounded-full flex-shrink-0" data-lang-key="filter_surgery">Surgery</button>
+                        <button class="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-700 rounded-full flex-shrink-0" data-lang-key="filter_pediatrics">Pediatrics</button>
+                    </div>
+                </div>
+                <div id="hospitals-list" class="px-6 mt-6 space-y-4">
+                     <!-- Content rendered by renderHospitals() -->
+                </div>
+            </div>
+
+            <!-- RECORDS SCREEN -->
+            <div id="records-screen" class="screen hidden">
+                 <header class="p-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900" data-lang-key="records_page_title">Medical Records</h1>
+                        <p class="text-gray-500 mt-1" data-lang-key="records_page_subtitle">Your health history</p>
+                    </div>
+                    <button class="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow hover:bg-blue-600 transition-colors">
+                        <i data-lucide="plus" class="w-6 h-6"></i>
+                    </button>
+                </header>
+                <div class="px-6 grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center space-x-3">
+                        <i data-lucide="calendar" class="w-8 h-8 text-blue-500 flex-shrink-0"></i>
+                        <div>
+                            <p class="text-gray-500 text-sm" data-lang-key="total_visits">Total Visits</p>
+                            <p class="text-2xl font-bold">24</p>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-100 flex items-center space-x-3">
+                         <i data-lucide="folder-open" class="w-8 h-8 text-green-500 flex-shrink-0"></i>
+                        <div>
+                            <p class="text-gray-500 text-sm" data-lang-key="records_label">Records</p>
+                            <p class="text-2xl font-bold">47</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 mt-8">
+                    <h2 class="text-xl font-bold" data-lang-key="recent_records_title">Recent Records</h2>
+                    <div id="records-list" class="mt-4 space-y-4">
+                        <!-- Content rendered by renderRecords() -->
+                       </div>
+                </div>
+            </div>
+             
+            <!-- SYMPTOMS SCREEN -->
+            <div id="symptoms-screen" class="screen hidden p-6">
+                <h1 class="text-3xl font-bold" data-lang-key="symptoms_page_title">Check Symptoms</h1>
+                <p class="mt-2 text-gray-600" data-lang-key="symptoms_page_subtitle">Describe your symptoms below for an AI-powered analysis.</p>
+                <div class="mt-6">
+                    <textarea id="symptoms-input" class="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none" data-lang-placeholder="symptoms_input_placeholder" placeholder="For example: I have a headache, fever, and a runny nose..."></textarea>
+                </div>
+                <button id="analyze-symptoms-button" class="mt-4 w-full bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center">
+                    <span data-lang-key="analyze_button">✨ Analyze Symptoms with AI</span>
+                </button>
+                <div id="symptoms-loader" class="hidden mt-6 flex justify-center">
+                    <div class="loader"></div>
+                </div>
+                <!-- IMPROVEMENT: Using prose class for better markdown rendering -->
+                <div id="symptoms-result" class="mt-6 p-4 bg-gray-100 rounded-lg hidden prose max-w-none text-sm leading-relaxed"></div>
+                <p class="mt-4 text-xs text-gray-500 text-center" data-lang-key="ai_disclaimer">Disclaimer: This is for informational purposes only and is not a substitute for professional medical advice.</p>
+            </div>
+
+            <!-- MEDICINES SCREEN -->
+            <div id="medicines-screen" class="screen hidden p-6">
+                 <header>
+                    <h1 class="text-3xl font-bold text-gray-900" data-lang-key="medicines_page_title">Medicine Information</h1>
+                    <p class="text-gray-500 mt-1" data-lang-key="medicines_page_subtitle">Search for medicines and learn about usage, side effects</p>
+                </header>
+                <div class="mt-6">
+                    <div class="relative">
+                        <input id="medicine-search-input" type="text" data-lang-placeholder="search_medicines_placeholder" placeholder="Search medicine name or generic name..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    </div>
+                    <button id="search-medicine-button" class="mt-3 w-full bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors">
+                        <span data-lang-key="search_button">Search Medicine</span>
+                    </button>
+                </div>
+                <div id="medicine-search-loader" class="hidden mt-6 flex justify-center">
+                    <div class="loader"></div>
+                </div>
+                <div id="medicine-info-result" class="mt-6">
+                     <h2 class="text-xl font-bold text-gray-800" data-lang-key="popular_medicines">Popular Medicines (Mock)</h2>
+                     <div id="medicines-list" class="grid grid-cols-2 gap-4 mt-4">
+                        <!-- Popular medicines or search result cards load here -->
+                        </div>
+                </div>
+            </div>
+            
+            <!-- MEDICINE DETAILS SCREEN -->
+            <div id="medicine-details-screen" class="screen hidden">
+                <!-- Content rendered by renderMedicineDetails() -->
+            </div>
+
+         <!-- SOS SCREEN (Initial) -->
+         <div id="sos-screen" class="screen hidden flex flex-col items-center justify-between p-6" style="min-height: calc(100vh - 56px);">
+                <div class="text-center w-full">
+                    <h1 class="text-3xl font-bold text-gray-800" data-lang-key="sos_page_title">Emergency SOS</h1>
+                    <p class="text-gray-600 mt-2" data-lang-key="sos_press_hold">Press and hold the button for 3 seconds in an emergency.</p>
+                </div>
+                
+                <div class="relative flex items-center justify-center my-10">
+                    <svg class="w-64 h-64" viewBox="0 0 220 220">
+                        <!-- Background Ring -->
+                        <circle cx="110" cy="110" r="100" class="stroke-current text-gray-200" stroke-width="12" fill="transparent"/>
+                        <!-- Progress Ring -->
+                        <circle id="sos-progress-ring" cx="110" cy="110" r="100" class="stroke-current text-red-500" stroke-width="12" fill="transparent" stroke-linecap="round"/>
+                    </svg>
+                    <!-- FIX: Corrected class from 4xl to text-4xl -->
+                    <button id="sos-button" class="absolute w-48 h-48 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg transform active:scale-95 transition-transform">
+                        <span class="text-4xl font-bold">SOS</span>
+                    </button>
+                </div>
+
+                <button id="sos-cancel-button" class="w-full bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors" data-lang-key="sos_cancel_initial">Cancel</button>
+            </div>
+
+            <!-- SOS SCREEN (Active) -->
+            <div id="sos-active-screen" class="screen hidden p-6">
+                <div class="text-center">
+                    <h1 class="text-2xl font-bold text-red-600" data-lang-key="sos_activated_title">SOS Activated</h1>
+                    <p class="text-gray-600 mt-1" data-lang-key="sos_activated_subtitle">Help is on the way. Your location and health details have been shared.</p>
+                </div>
+                
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-6">
+                    <h3 class="font-bold text-red-800" data-lang-key="sos_user_info">Your Vital Information</h3>
+                    <div id="sos-user-details" class="mt-2 text-sm text-red-700 space-y-1">
+                        <!-- Mock user details -->
+                         <p><span class="font-semibold" data-lang-key="sos_blood_type">Blood Type</span>: O+</p>
+                         <p><span class="font-semibold" data-lang-key="sos_allergies">Allergies</span>: Penicillin, Peanuts</p>
+                         <p><span class="font-semibold" data-lang-key="sos_conditions">Conditions</span>: Type 2 Diabetes</p>
+                        </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="font-bold text-gray-800" data-lang-key="sos_location">Your Current Location</h3>
+                    <!-- IMPROVEMENT: Use the actual map container for consistency -->
+                    <div id="sos-active-map" class="bg-gray-200 h-40 rounded-lg mt-2 flex items-center justify-center">
+                        <p class="text-gray-500">[Map Placeholder]</p>
+                    </div>
+                    <p id="sos-address" class="text-gray-600 text-sm text-center mt-2">Fetching precise address...</p>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="font-bold text-gray-800" data-lang-key="sos_contacts_status">Emergency Contacts Status</h3>
+                    <div id="sos-contacts-list" class="mt-2 space-y-2">
+                        <!-- Mock contacts status -->
+                        <div class="flex justify-between text-sm text-gray-700">
+                            <span>Mom (+91 9xxxx 56789)</span>
+                            <span class="text-green-600 font-semibold" data-lang-key="sos_notifying">Notifying...</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-700">
+                             <span>Emergency Contact 2 (123-456-7890)</span>
+                            <span class="text-green-600 font-semibold" data-lang-key="sos_notifying">Notifying...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="sos-cancel-alert-button" class="mt-8 w-full bg-red-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-red-700 transition-colors" data-lang-key="sos_cancel_alert">Cancel Alert</button>
+            </div>
+            
+        <div id="profile-screen" class="screen hidden bg-gray-50 pb-6">
+                <header class="p-6 bg-white border-b border-gray-200">
+                    <h1 class="text-3xl font-bold text-gray-900" data-lang-key="profile_page_title">Profile</h1>
+                </header>
+            
+                <div class="p-6 flex items-center space-x-4 bg-white">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">JD</div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900" data-lang-key="profile_user_name">John Doe</h2>
+                        <p class="text-gray-500">+91 98765 43210</p>
+                    </div>
+                </div>
+            
+                <div class="px-4 mt-6 space-y-4">
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <a href="#" class="profile-item flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="user" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_edit">Edit Profile</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                        <a href="#" class="profile-item flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="lock" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_security">Security</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                    </div>
+            
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <a href="#" class="profile-item flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="phone-call" class="w-6 h-6 text-red-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_emergency">Emergency Contacts</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                        <a href="#" class="profile-item flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_allergies">Allergies & Conditions</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                    </div>
+            
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="profile-item flex items-center justify-between p-4 border-b border-gray-100">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="bell" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_notifications">Notifications</span>
+                            </div>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="notification-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                <label for="notification-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        <a href="#" id="profile-language-button" class="profile-item flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="globe" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_language">Language</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                         <a href="#" class="profile-item flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                               <i data-lucide="help-circle" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_help">Help Center</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                         <a href="#" class="profile-item flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                               <i data-lucide="shield-check" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_privacy">Privacy Policy</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                         <a href="#" class="profile-item flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <i data-lucide="info" class="w-6 h-6 text-gray-500"></i>
+                                <span class="font-semibold" data-lang-key="profile_about">About Us</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                        </a>
+                    </div>
+                </div>
+            
+                <div class="p-6">
+                    <button class="w-full bg-red-50 text-red-600 font-bold py-3 px-4 rounded-lg hover:bg-red-100 transition-colors" data-lang-key="profile_logout">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- NAVIGATION BAR -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex justify-around h-16 z-20">
+            <button data-screen="home-screen" class="nav-item flex-1 flex flex-col items-center justify-center pt-2 pb-1 text-blue-500 active">
+                <i data-lucide="home" class="w-6 h-6"></i>
+                <span class="text-xs font-medium mt-1" data-lang-key="nav_home">Home</span>
+            </button>
+            <button data-screen="records-screen" class="nav-item flex-1 flex flex-col items-center justify-center pt-2 pb-1 text-gray-500">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+                <span class="text-xs font-medium mt-1" data-lang-key="nav_records">Records</span>
+            </button>
+            <button data-screen="teleconsultation-screen" class="nav-item flex-1 flex flex-col items-center justify-center pt-2 pb-1 text-gray-500">
+                <i data-lucide="video" class="w-6 h-6"></i>
+                <span class="text-xs font-medium mt-1" data-lang-key="nav_consult">Consult</span>
+            </button>
+            <button data-screen="medicines-screen" class="nav-item flex-1 flex flex-col items-center justify-center pt-2 pb-1 text-gray-500">
+                <i data-lucide="pill" class="w-6 h-6"></i>
+                <span class="text-xs font-medium mt-1" data-lang-key="nav_medicines">Medicines</span>
+            </button>
+            <button data-screen="profile-screen" class="nav-item flex-1 flex flex-col items-center justify-center pt-2 pb-1 text-gray-500">
+                 <i data-lucide="user" class="w-6 h-6"></i>
+                <span class="text-xs font-medium mt-1" data-lang-key="nav_profile">Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20n69z7Otxr8W2Z7tLz31b5/X15B4J19N6l16kL43b/"
+        crossorigin=""></script>
+    
+    <script>
+        // Store only the base English strings. The rest will be dynamically generated.
+        const baseTranslations = {
+            en: {
+                welcome_title: "Welcome to HealthLink",
+                welcome_subtitle: "Your comprehensive health assistant",
+                symptoms_title: "Check Symptoms",
+                symptoms_subtitle: "Get health insights instantly",
+                teleconsultation_title: "Teleconsultation",
+                teleconsultation_subtitle: "Consult with top doctors",
+                hospitals_title: "Nearby Hospitals",
+                hospitals_subtitle: "Find medical facilities near you",
+                search_hospitals_placeholder: "Search hospitals or specialities...",
+                search_doctors_placeholder: "Search doctors or specialities...",
+                search_button: "Search Medicine",
+                records_title: "My Records",
+                records_subtitle: "Access your medical history",
+                medicines_title: "Medicine Info",
+                medicines_subtitle: "Search medications & usage",
+                sos_title: "Emergency SOS",
+                sos_subtitle: "One-tap emergency assistance",
+                teleconsultation_page_title: "Teleconsultation",
+                teleconsultation_page_subtitle: "Find and book appointments with doctors",
+                consult_by_concern_title: "Consult by Health Concern",
+                find_doctors_by_speciality_title: "Find Doctors by Speciality",
+                hospitals_page_title: "Nearby Hospitals",
+                hospitals_page_subtitle: "Find medical facilities close to you",
+                filter_all: "All",
+                filter_cardiology: "Cardiology",
+                filter_emergency: "Emergency",
+                filter_surgery: "Surgery",
+                filter_pediatrics: "Pediatrics",
+                records_page_title: "Medical Records",
+                records_page_subtitle: "Your health history",
+                total_visits: "Total Visits",
+                records_label: "Records",
+                recent_records_title: "Recent Records",
+                symptoms_page_title: "Check Symptoms",
+                medicines_page_title: "Medicine Information",
+                sos_page_title: "Emergency SOS", // FIX: Standardized key to sos_page_title
+                profile_page_title: "Profile",
+                coming_soon: "This feature is coming soon!",
+                nav_home: "Home",
+                nav_records: "Records",
+                nav_consult: "Consult",
+                nav_medicines: "Medicines",
+                nav_profile: "Profile",
+                book_now: "Book Now",
+                view_details: "View Details",
+                available_today: "Available Today",
+                available_tomorrow: "Available Tomorrow",
+                years_experience: "years experience",
+                reviews: "reviews",
+                languages_spoken: "Languages spoken",
+                concern_period: "Period doubts or Pregnancy",
+                concern_acne: "Acne, pimple or skin issues",
+                concern_performance: "Performance issues in bed",
+                concern_fever: "Cold, cough or fever",
+                concern_child: "Child not feeling well",
+                concern_anxiety: "Depression or anxiety",
+                consult_now: "CONSULT NOW",
+                specialty_gp: "General Physician",
+                specialty_cardiologist: "Cardiologist",
+                specialty_dermatologist: "Dermatologist",
+                record_type_prescription: "Prescription",
+                record_type_visit: "Visit",
+                record_type_lab: "Lab Report",
+                record_bp_med_title: "Blood Pressure Medication",
+                record_bp_med_details: "Lisinopril 10mg - Take once daily",
+                record_checkup_title: "Annual Checkup",
+                record_checkup_details: "General health examination, all tests normal",
+                record_allergy_title: "Allergy Test Results",
+                record_allergy_details: "Slight sensitivity to pollen detected",
+                symptoms_page_subtitle: "Describe your symptoms below for an AI-powered analysis.",
+                symptoms_input_placeholder: "For example: I have a headache, fever, and a runny nose...",
+                analyze_button: "✨ Analyze Symptoms with AI",
+                ai_disclaimer: "Disclaimer: This is for informational purposes only and is not a substitute for professional medical advice.",
+                medicines_page_subtitle: "Search for medicines and learn about usage, side effects",
+                search_medicines_placeholder: "Search medicine name or generic name...",
+                popular_medicines: "Popular Medicines",
+                med_usage: "Usage",
+                med_dosage: "Dosage & Administration",
+                med_side_effects: "Common Side Effects",
+                med_alternatives: "Alternative Medicines",
+                med_precautions: "Precautions",
+                med_interactions: "Drug Interactions",
+                med_lisinopril_generic: "Lisinopril",
+                med_lisinopril_usage: "Treatment of high blood pressure (hypertension) and heart failure.",
+                med_lisinopril_dosage: "As prescribed by your doctor. Typically taken once a day.",
+                se_cough: "Dry, persistent cough",
+                se_dizziness: "Dizziness or lightheadedness",
+                se_headache: "Headache",
+                alt_ramipril: "Ramipril",
+                alt_losartan: "Losartan",
+                prec_kidney: "Monitor kidney function regularly.",
+                prec_pregnancy: "Not recommended during pregnancy.",
+                int_potassium: "Potassium supplements or salt substitutes.",
+                int_nsaids: "NSAIDs (e.g., ibuprofen, naproxen).",
+                med_metformin_generic: "Metformin Hydrochloride",
+                med_metformin_usage: "Treatment of type 2 diabetes mellitus",
+                med_metformin_dosage: "500mg twice daily with meals",
+                se_diarrhea: "Diarrhea",
+                se_nausea: "Nausea, vomiting",
+                se_stomach_upset: "Stomach upset",
+                se_metallic_taste: "Metallic taste",
+                se_weakness: "Weakness",
+                alt_glipizide: "Glipizide",
+                alt_glyburide: "Glyburide",
+                alt_sitagliptin: "Sitagliptin",
+                alt_empagliflozin: "Empagliflozin",
+                prec_meals: "Take with meals to reduce stomach upset",
+                prec_kidney_tests: "Regular kidney function tests",
+                prec_alcohol: "Avoid excessive alcohol",
+                prec_sugar_levels: "Monitor blood sugar levels regularly",
+                int_contrast_agents: "Iodinated contrast agents",
+                int_diuretics: "Diuretics",
+                int_corticosteroids: "Corticosteroids",
+                int_birth_control: "Birth control pills",
+                med_atorvastatin_generic: "Atorvastatin Calcium",
+                med_atorvastatin_usage: "To lower bad cholesterol (LDL) and fats (triglycerides) and raise good cholesterol (HDL).",
+                med_atorvastatin_dosage: "As prescribed by your doctor, usually taken once daily.",
+                se_muscle_pain: "Muscle pain, tenderness, or weakness",
+                se_joint_pain: "Joint Pain",
+                alt_simvastatin: "Simvastatin",
+                alt_rosuvastatin: "Rosuvastatin",
+                prec_liver: "Monitor liver function.",
+                prec_alcohol_atorv: "Limit alcoholic beverages.",
+                int_grapefruit: "Grapefruit and grapefruit juice.",
+                int_antifungals: "Certain antifungal medications.",
+                profile_user_name: "John Doe",
+                sos_press_hold: "Press and hold the button for 3 seconds in an emergency.",
+                sos_cancel_initial: "Cancel",
+                sos_activated_title: "SOS Activated",
+                sos_activated_subtitle: "Help is on the way. Your location and health details have been shared.",
+                sos_user_info: "Your Vital Information",
+                sos_blood_type: "Blood Type",
+                sos_allergies: "Allergies",
+                sos_conditions: "Conditions",
+                sos_location: "Your Current Location",
+                sos_contacts_status: "Emergency Contacts Status",
+                sos_notifying: "Notifying",
+                sos_cancel_alert: "Cancel Alert",
+                profile_edit: "Edit Profile",
+                profile_security: "Security",
+                profile_emergency: "Emergency Contacts",
+                profile_allergies: "Allergies & Conditions",
+                profile_notifications: "Notifications",
+                profile_language: "Language",
+                profile_help: "Help Center",
+                profile_privacy: "Privacy Policy",
+                profile_about: "About Us",
+                profile_logout: "Logout",
+                map_loading: "Loading Map and Location...",
+                realtime_availability_title: "Real-Time Availability",
+                realtime_availability_subtitle: "Check stock at nearby pharmacies.",
+                check_availability_button: "Check Nearby Stock",
+                availability_placeholder: "Click button to check availability...",
+                available_at: "Available",
+                out_of_stock: "Out of Stock",
+                loading: "Checking availability...",
+                nearby_locations: "nearby locations found",
+                no_results: "No results found matching your criteria.",
+                away: "away",
+                alt_suggestions_button: "✨ Suggest Natural Alternatives",
+                alt_suggestions_title: "Natural Alternatives",
+                alt_loading: "Consulting AI for natural alternatives...",
+                alt_disclaimer: "These alternatives are AI-generated based on current web data. Always consult a healthcare professional before starting any new treatment.",
+                med_search_instructions: "Search for any medicine name to get instant information powered by AI web search.",
+                med_search_no_result: "No specific information found. Please try a different search term.",
+                getting_location: "Getting your location...",
+                location_error: "Could not get location. Using default mock location.",
+            }
+        };
+        // This object will store dynamically translated texts to prevent redundant API calls.
+        const dynamicTranslations = { en: baseTranslations.en }; 
+
+        // Map of language codes to their native names (for the Gemini API prompt)
+        const languageMap = {
+            pa: "Punjabi",
+            en: "English",
+            hi: "Hindi",
+            ta: "Tamil",
+            te: "Telugu",
+            bn: "Bengali"
+        };
+        
+        // --- GLOBAL MAP VARIABLES ---
+        let map = null;
+        let activeSosMap = null; // NEW: Map instance for the active SOS screen
+        let userLocation = [13.0827, 80.2707]; // Default mock coordinates (Chennai, India)
+        let hospitalMarkers = null; 
+        let locationRetrieved = false;
+        // --- END GLOBAL MAP VARIABLES ---
+
+        // --- SOS VARIABLES ---
+        const SOS_DURATION = 3000; // 3 seconds
+        let sosTimer = null;
+        let sosStartTime = 0;
+        let isSosActive = false;
+        // --- END SOS VARIABLES ---
+
+
+        // Mock Data (including Lat/Lng for map integration)
+        const healthConcernsData = [
+            { key: 'concern_period', image: 'https://www.practostatic.com/consult/consult-home/symptoms_icon/irregular-painful+period.png' },
+            { key: 'concern_acne', image: 'https://www.practostatic.com/consult/consult-home/symptoms_icon/Acne.png' },
+            { key: 'concern_performance', image: 'https://www.practo.com/consult/static/images/top-speciality-sexology.svg' },
+            { key: 'concern_fever', image: 'https://www.practostatic.com/consult/consult-home/symptoms_icon/coughing.png' },
+            { key: 'concern_child', image: 'https://www.practo.com/consult/static/images/top-speciality-pediatric.svg' },
+            { key: 'concern_anxiety', image: 'https://www.practostatic.com/acred/search-assets/2/12-mental-wellness.png' }
+        ];
+
+        // MOCK DOCTOR DATA (Restored)
+        const doctorsData = [
+            {
+                name: 'Dr. Priya Sharma',
+                specialtyKey: 'specialty_gp',
+                experience: 12,
+                rating: 4.9,
+                reviews: 245,
+                image: 'https://placehold.co/80x80/E2E8F0/4A5568?text=Dr.P',
+                availabilityKey: 'available_today'
+            },
+            {
+                name: 'Dr. Arjun Reddy',
+                specialtyKey: 'specialty_cardiologist',
+                experience: 15,
+                rating: 4.8,
+                reviews: 312,
+                image: 'https://placehold.co/80x80/E2E8F0/4A5568?text=Dr.A',
+                availabilityKey: 'available_tomorrow'
+            },
+            {
+                name: 'Dr. Anjali Mehta',
+                specialtyKey: 'specialty_dermatologist',
+                experience: 8,
+                rating: 4.9,
+                reviews: 189,
+                image: 'https://placehold.co/80x80/E2E8F0/4A5568?text=Dr.M',
+                availabilityKey: 'available_today'
+            }
+        ];
+        
+        // Mock data structure to simulate Overpass/OSM Query results
+        const osmMockData = [
+            // Coordinates offset relative to the user's current location (userLocation)
+            {
+                name: 'City General Hospital',
+                distance: '0.8 km',
+                rating: 4.5,
+                tags: ['filter_cardiology', 'filter_emergency', 'filter_surgery'],
+                hours: '24/7',
+                phone: '+1 (555) 123-4567',
+                address: '123 Main St, Downtown',
+                languages: ['English', 'Spanish', 'Chinese'],
+                latOffset: 0.0023, 
+                lngOffset: 0.0035 
+            },
+            {
+                name: 'Community Wellness Clinic',
+                distance: '1.2 km',
+                rating: 4.2,
+                tags: ['filter_pediatrics', 'specialty_gp'],
+                hours: '9am - 6pm',
+                phone: '+1 (555) 987-6543',
+                address: '456 Oak Ave, Suburbia',
+                languages: ['English', 'Hindi'],
+                latOffset: -0.0018, 
+                lngOffset: -0.0042
+            },
+             {
+                name: 'St. Jude\'s Medical Center',
+                distance: '2.5 km',
+                rating: 4.8,
+                tags: ['filter_emergency', 'filter_surgery'],
+                hours: '24/7',
+                phone: '+1 (555) 234-5678',
+                address: '789 Pine Ln, Medical District',
+                languages: ['English', 'French'],
+                latOffset: -0.0127, 
+                lngOffset: 0.0093
+            }
+        ];
+
+        // This static mock data will be used to demonstrate real-time availability in the details screen
+        const mockAvailabilityData = {
+            'Lisinopril': [
+                { name: 'HealthPlus Pharmacy', distance: '0.5 km', stock: true },
+                { name: 'City Drug Store', distance: '1.1 km', stock: false },
+                { name: 'Apollo Pharmacy', distance: '2.0 km', stock: true },
+            ],
+            'Metformin': [
+                { name: 'City Drug Store', distance: '1.1 km', stock: true },
+                { name: 'Community Pharmacy', distance: '3.5 km', stock: false },
+            ],
+            'Atorvastatin': [
+                { name: 'HealthPlus Pharmacy', distance: '0.5 km', stock: true },
+                { name: 'City Drug Store', distance: '1.1 km', stock: true },
+                { name: 'Wellness Mart', distance: '2.8 km', stock: true },
+            ]
+        };
+
+        // Current search results for medicine info (dynamically updated)
+        let currentMedicineInfo = {};
+
+
+        // DOM Elements
+        const mainContent = document.getElementById('main-content');
+        const screens = document.querySelectorAll('.screen');
+        const navItems = document.querySelectorAll('.nav-item');
+        const healthConcernsGrid = document.getElementById('health-concerns-grid');
+        const doctorsListContainer = document.getElementById('doctors-list');
+        const hospitalsListContainer = document.getElementById('hospitals-list');
+        const recordsListContainer = document.getElementById('records-list');
+        const medicinesListContainer = document.getElementById('medicines-list');
+        const medicineDetailsContainer = document.getElementById('medicine-details-screen');
+        
+        
+        // Home Screen Cards
+        const homeSymptomsCard = document.getElementById('home-symptoms-card');
+        const homeTeleconsultationCard = document.getElementById('home-teleconsultation-card');
+        const homeHospitalsCard = document.getElementById('home-hospitals-card');
+        const homeRecordsCard = document.getElementById('home-records-card');
+        const homeMedicinesCard = document.getElementById('home-medicines-card');
+        const homeSosCard = document.getElementById('home-sos-card');
+        const sosButton = document.getElementById('sos-button');
+        const sosProgressRing = document.getElementById('sos-progress-ring');
+        const sosCancelInitialButton = document.getElementById('sos-cancel-button');
+        const sosCancelAlertButton = document.getElementById('sos-cancel-alert-button');
+
+
+        // Functions
+        let currentLang = 'en';
+
+        // NEW: Function to initialize the SOS Active Map
+        function initSosActiveMap() {
+            if (typeof L === 'undefined' || typeof L.map !== 'function') {
+                setTimeout(initSosActiveMap, 50); 
+                return;
+            }
+
+            if (activeSosMap) {
+                activeSosMap.remove();
+                activeSosMap = null;
+            }
+            
+            // Clear map container before init
+            document.getElementById('sos-active-map').innerHTML = ""; 
+
+            activeSosMap = L.map('sos-active-map').setView(userLocation, 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(activeSosMap);
+
+            L.marker(userLocation, {
+                 icon: L.divIcon({
+                    className: 'custom-user-marker',
+                    html: `<div class="bg-red-600 text-white rounded-full p-2 shadow-lg ring-4 ring-red-300">🚨</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                })
+            }).addTo(activeSosMap)
+                .bindPopup("<b>Emergency Location</b>")
+                .openPopup();
+            
+             setTimeout(() => {
+                activeSosMap.invalidateSize();
+            }, 100); 
+        }
+
+        // NEW: Function to activate SOS
+        function activateSOS() {
+            if (isSosActive) return;
+            isSosActive = true;
+            console.log("SOS ACTIVATED at:", userLocation);
+            
+            showScreen('sos-active-screen');
+            initSosActiveMap();
+            
+            // Mock address lookup
+            document.getElementById('sos-address').innerText = `Lat: ${userLocation[0].toFixed(4)}, Lng: ${userLocation[1].toFixed(4)} - Estimated Street: Sector 7, Downtown`;
+        }
+
+        // NEW: Function to cancel SOS alert
+        function cancelSOS() {
+            isSosActive = false;
+            console.log("SOS Alert CANCELED.");
+            showScreen('home-screen');
+        }
+
+        // NEW: Function to update the visual progress ring
+        function updateSosProgress(progress) {
+            const circumference = 628.3; // 2 * PI * 100
+            const offset = circumference * (1 - progress);
+            sosProgressRing.style.strokeDashoffset = offset;
+
+            // Update button color/text during hold
+            const langPack = dynamicTranslations[currentLang];
+            const buttonText = sosButton.querySelector('span');
+            if (progress > 0) {
+                 sosButton.classList.add('bg-red-600', 'ring-8', 'ring-red-400');
+                 buttonText.innerText = Math.ceil(3 * progress) + 's';
+            } else {
+                 sosButton.classList.remove('bg-red-600', 'ring-8', 'ring-red-400');
+                 buttonText.innerText = 'SOS';
+            }
+        }
+
+        // NEW: Start the hold timer
+        function startSosHold() {
+            if (sosTimer !== null) return; 
+
+            sosStartTime = Date.now();
+            updateSosProgress(0.01); 
+
+            sosTimer = setInterval(() => {
+                const elapsed = Date.now() - sosStartTime;
+                const progress = Math.min(1, elapsed / SOS_DURATION);
+                updateSosProgress(progress);
+
+                if (progress === 1) {
+                    clearInterval(sosTimer);
+                    sosTimer = null;
+                    activateSOS();
+                    updateSosProgress(0); // Reset visual state
+                }
+            }, 50);
+        }
+
+        // NEW: Stop and reset the hold timer
+        function stopSosHold() {
+            if (sosTimer !== null) {
+                clearInterval(sosTimer);
+                sosTimer = null;
+            }
+            // Only reset progress visually if SOS hasn't been activated
+            if (!isSosActive) {
+                updateSosProgress(0);
+            }
+        }
+
+
+        // Function to get user location
+        function getUserLocation() {
+            const langPack = dynamicTranslations[currentLang];
+            const mapContainer = document.getElementById('hospital-map');
+            
+            if (locationRetrieved) {
+                // Ensure map initializes even if location was retrieved successfully before
+                setTimeout(initLeafletMap, 100); 
+                return;
+            }
+
+            mapContainer.innerHTML = `<p class="text-gray-500 p-8 text-center">${langPack['getting_location']}</p>`;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = [position.coords.latitude, position.coords.longitude];
+                        locationRetrieved = true;
+                        setTimeout(initLeafletMap, 100);
+                    },
+                    (error) => {
+                        userLocation = [13.0827, 80.2707]; // Use mock location
+                        mapContainer.innerHTML = `<p class="text-red-500 p-8 text-center">${langPack['location_error']}</p>`;
+                        locationRetrieved = true;
+                        // Still try to initialize map with mock data after error message
+                        setTimeout(initLeafletMap, 500);
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+            } else {
+                 mapContainer.innerHTML = `<p class="text-red-500 p-8 text-center">${langPack['location_error']}</p>`;
+                 locationRetrieved = true;
+                 setTimeout(initLeafletMap, 500);
+            }
+        }
+
+
+        // Initialize Map in a separate function
+        function initLeafletMap() {
+            // CRITICAL: Check if L (Leaflet) is ready
+            if (typeof L === 'undefined' || typeof L.map !== 'function') {
+                setTimeout(initLeafletMap, 50); 
+                return;
+            }
+
+            if (map) {
+                // CRITICAL FIX: Remove the old map instance if it exists to prevent errors 
+                // when recreating on the same element, especially when navigating screens.
+                map.remove();
+                map = null;
+            }
+            
+            document.getElementById('hospital-map').innerHTML = ""; 
+
+            map = L.map('hospital-map').setView(userLocation, 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            // FIX: Ensure user marker is added
+            L.marker(userLocation, {
+                 icon: L.divIcon({
+                    className: 'custom-user-marker',
+                    html: `<div class="bg-blue-600 text-white rounded-full p-2 shadow-lg ring-4 ring-blue-300">📍</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                })
+            }).addTo(map)
+                .bindPopup("<b>Your Location</b>")
+                .openPopup();
+            
+            if (hospitalMarkers) {
+                hospitalMarkers.addTo(map);
+            } else {
+                 // FIX: Initialize hospitalMarkers here if it wasn't done in DOMContentLoaded
+                 hospitalMarkers = L.layerGroup();
+                 hospitalMarkers.addTo(map);
+                 console.error("Leaflet Layer Group initialized late.");
+            }
+            
+            const hospitalSearchInput = document.getElementById('hospital-search-input');
+            // FIX: Use optional chaining in case element is not rendered yet
+            renderHospitals('filter_all', hospitalSearchInput?.value || '');
+        }
+
+        // Function to clear old markers and place new ones
+        function updateMapMarkers(locations) {
+            if (typeof L === 'undefined' || !hospitalMarkers || !map) return;
+
+            hospitalMarkers.clearLayers();
+            
+            const bounds = L.latLngBounds(userLocation, userLocation); 
+
+            locations.forEach(hospital => {
+                const lat = userLocation[0] + (hospital.latOffset || 0);
+                const lng = userLocation[1] + (hospital.lngOffset || 0);
+
+                const marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'custom-hospital-marker',
+                        html: `<div class="bg-red-600 text-white rounded-full p-2 shadow-lg ring-4 ring-red-300">🏥</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30]
+                    })
+                }).bindPopup(`<b>${hospital.name}</b><br>${hospital.distance} away`);
+                hospitalMarkers.addLayer(marker);
+                bounds.extend([lat, lng]); 
+            });
+
+            if (locations.length > 0) {
+                 map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 }); 
+            } else {
+                map.setView(userLocation, 13);
+            }
+           
+        }
+
+
+        /**
+         * Dynamically fetches translations for the entire UI using the Gemini API.
+         */
+        async function fetchTranslation(targetLang, sourceStrings) {
+            const languageName = languageMap[targetLang] || targetLang;
+            const sourceJson = JSON.stringify(sourceStrings);
+
+            const systemPrompt = `You are a high-quality translator for a mobile health app UI. Translate the provided JSON object from English into ${languageName}. Maintain the exact JSON key structure. Only translate the string values. Do NOT add any introductory or explanatory text outside the JSON object. Only output the valid, translated JSON object.`;
+            const userQuery = `Translate the following UI strings to ${languageName}: ${sourceJson}`;
+            
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: Object.keys(sourceStrings).reduce((acc, key) => {
+                            acc[key] = { type: "STRING" };
+                            return acc;
+                        }, {}),
+                        propertyOrdering: Object.keys(sourceStrings)
+                    }
+                },
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API Response Error:", response.status, response.statusText, errorBody);
+                    throw new Error(`API error: ${response.statusText} (${response.status})`);
+                }
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (jsonText) {
+                    const cleanedJsonText = jsonText.replace(/```json|```/g, '').trim();
+
+                    const parsedJson = JSON.parse(cleanedJsonText);
+                    return { ...sourceStrings, ...parsedJson }; 
+                } else {
+                    throw new Error("Invalid translation response format or missing content.");
+                }
+            } catch (error) {
+                console.error(`Error translating to ${languageName}:`, error);
+                throw new Error(error.message); 
+            }
+        }
+
+        /**
+         * Applies the translations to the UI elements.
+         */
+        async function changeLanguage(lang) {
+            if (lang === currentLang) return;
+
+            let langPack;
+            
+            const languageButton = document.getElementById('language-button');
+            const originalButtonContent = languageButton.innerHTML;
+            languageButton.innerHTML = `<i data-lucide="loader" class="w-6 h-6 animate-spin text-blue-500"></i>`;
+            languageButton.disabled = true;
+
+            try {
+                if (dynamicTranslations[lang]) {
+                    langPack = dynamicTranslations[lang];
+                } else {
+                    // Split into batches for reliability
+                    const keys = Object.keys(baseTranslations.en);
+                    
+                    // Batch 1: Core UI/Navigation (keys 0 to 45)
+                    const batch1Keys = keys.slice(0, 45);
+                    const batch1Source = batch1Keys.reduce((acc, key) => { acc[key] = baseTranslations.en[key]; return acc; }, {});
+                    const batch1Translated = await fetchTranslation(lang, batch1Source);
+
+                    // Batch 2: Specific medical terms and detailed content (keys 46 onwards)
+                    const batch2Keys = keys.slice(45);
+                    const batch2Source = batch2Keys.reduce((acc, key) => { acc[key] = baseTranslations.en[key]; return acc; }, {});
+                    const batch2Translated = await fetchTranslation(lang, batch2Source);
+                    
+                    // Merge and cache
+                    langPack = { ...baseTranslations.en, ...batch1Translated, ...batch2Translated };
+                    dynamicTranslations[lang] = langPack;
+                }
+
+                currentLang = lang;
+                
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.getAttribute('data-lang-key');
+                    if (langPack[key]) {
+                        el.innerText = langPack[key];
+                    }
+                });
+                document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+                    const key = el.getAttribute('data-lang-placeholder');
+                     if (langPack[key]) {
+                        el.placeholder = langPack[key];
+                    }
+                });
+                // Rerender Lucide icons which may have been dynamically removed by innerText update
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+
+                // Re-render dynamic content with new language
+                renderHealthConcerns();
+                renderDoctors();
+                renderHospitals();
+                renderRecords();
+                // Check current screen to see if medicine details or list needs refreshing
+                if (document.getElementById('medicines-screen').classList.contains('hidden')) {
+                    renderMedicineDetails(currentMedicineInfo.name, 'search');
+                } else {
+                    renderMedicinesList();
+                }
+
+
+            } catch (error) {
+                console.error(`Failed to change language to ${lang}:`, error);
+                languageButton.innerHTML = `<i data-lucide="globe" class="w-6 h-6 text-red-500"></i>`;
+            } finally {
+                languageButton.innerHTML = originalButtonContent; 
+                languageButton.disabled = false;
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        function showScreen(screenId) {
+            screens.forEach(screen => {
+                screen.classList.toggle('hidden', screen.id !== screenId);
+            });
+            mainContent.scrollTop = 0;
+
+            navItems.forEach(item => {
+                item.classList.toggle('active', item.dataset.screen === screenId);
+                item.classList.toggle('text-blue-500', item.dataset.screen === screenId);
+                item.classList.toggle('text-gray-500', item.dataset.screen !== screenId);
+            });
+            
+            if (screenId === 'hospitals-screen') {
+                getUserLocation();
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 100); 
+
+            } else if (screenId === 'teleconsultation-screen') {
+                const doctorSearchInput = document.getElementById('doctor-search-input');
+                renderDoctors(doctorSearchInput?.value || '');
+                renderHealthConcerns(); 
+            } else if (screenId === 'medicines-screen') {
+                renderMedicinesList();
+            } else if (screenId === 'sos-screen') {
+                 // Ensure visual progress is reset on entering SOS screen
+                 updateSosProgress(0);
+                 isSosActive = false;
+            }
+        }
+        
+        function renderStarRating(rating) {
+            let stars = '';
+            let fullStars = Math.floor(rating);
+            let halfStar = rating % 1 !== 0;
+            let emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+            for(let i=0; i < fullStars; i++) {
+                stars += `<i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>`;
+            }
+             if (halfStar) {
+                stars += `<i data-lucide="star-half" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>`;
+            }
+            for(let i=0; i < emptyStars; i++) {
+                stars += `<i data-lucide="star" class="w-4 h-4 text-gray-300"></i>`;
+            }
+
+            return stars;
+        }
+
+        function renderHealthConcerns() {
+            healthConcernsGrid.innerHTML = '';
+            const langPack = dynamicTranslations[currentLang];
+            healthConcernsData.forEach(concern => {
+                const concernCard = `
+                    <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-shadow">
+                        <img src="${concern.image}" alt="${langPack[concern.key]}" class="w-16 h-16 object-contain">
+                        <p class="text-xs font-semibold text-gray-800 mt-2">${langPack[concern.key]}</p>
+                        <p class="text-xs font-bold text-teal-500 mt-2">${langPack['consult_now']}</p>
+                    </div>
+                `;
+                healthConcernsGrid.innerHTML += concernCard;
+            });
+             // Re-render Lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+        
+        function renderDoctors(searchQuery = '') {
+            doctorsListContainer.innerHTML = '';
+            const langPack = dynamicTranslations[currentLang];
+
+            let filteredDoctors = doctorsData;
+
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filteredDoctors = filteredDoctors.filter(doctor => 
+                    doctor.name.toLowerCase().includes(query) || 
+                    (langPack[doctor.specialtyKey] || doctor.specialtyKey).toLowerCase().includes(query)
+                );
+            }
+
+            if (filteredDoctors.length === 0) {
+                 doctorsListContainer.innerHTML = `<p class="text-center text-gray-500 mt-8">${langPack['no_results'] || 'No results found matching your criteria.'}</p>`;
+                 return;
+            }
+
+            filteredDoctors.forEach(doctor => {
+                const doctorCard = `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center space-x-4">
+                        <img src="${doctor.image}" alt="Dr. ${doctor.name}" class="w-20 h-20 rounded-full object-cover">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">${doctor.name}</h3>
+                            <p class="text-teal-600 font-semibold text-sm">${langPack[doctor.specialtyKey]}</p>
+                            <p class="text-xs text-gray-500 mt-1">${doctor.experience} ${langPack['years_experience']}</p>
+                            <div class="flex items-center text-sm mt-1">
+                                ${renderStarRating(doctor.rating)}
+                                <span class="ml-2 text-gray-600">${doctor.rating} (${doctor.reviews} ${langPack['reviews']})</span>
+                            </div>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-md">${langPack[doctor.availabilityKey]}</span>
+                                <button class="px-4 py-2 text-sm font-semibold bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors">${langPack['book_now']}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                doctorsListContainer.innerHTML += doctorCard;
+            });
+             // Re-render Lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+
+        function renderHospitals(filterTag = 'filter_all', searchQuery = '') {
+            hospitalsListContainer.innerHTML = '';
+            const langPack = dynamicTranslations[currentLang];
+
+            let filteredHospitals = osmMockData; 
+
+            if (filterTag !== 'filter_all') {
+                filteredHospitals = filteredHospitals.filter(hospital => hospital.tags.includes(filterTag));
+            }
+
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filteredHospitals = filteredHospitals.filter(hospital => 
+                    hospital.name.toLowerCase().includes(query) || 
+                    hospital.address.toLowerCase().includes(query) ||
+                    hospital.tags.some(tag => (langPack[tag] || tag).toLowerCase().includes(query))
+                );
+            }
+            
+            if (map) {
+                updateMapMarkers(filteredHospitals);
+            }
+
+            if (filteredHospitals.length === 0) {
+                 hospitalsListContainer.innerHTML = `<p class="text-center text-gray-500 mt-8">${langPack['no_results'] || 'No hospitals found matching your criteria.'}</p>`;
+                 return;
+            }
+
+
+            filteredHospitals.forEach(hospital => {
+                const hospitalCard = `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-lg">${hospital.name}</h3>
+                                <div class="flex items-center text-sm text-gray-500 mt-1">
+                                    <i data-lucide="map-pin" class="w-4 h-4 text-gray-400 mr-1"></i>
+                                    <span>${hospital.distance}</span>
+                                    <span class="mx-2">|</span>
+                                    <div class="flex items-center">
+                                        ${renderStarRating(hospital.rating)}
+                                        <span class="ml-1 text-gray-600 font-semibold">${hospital.rating}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="text-blue-500">
+                                <i data-lucide="phone" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            ${hospital.tags.map(tag => `<span class="text-xs font-semibold bg-blue-50 text-blue-600 px-2 py-1 rounded-full">${langPack[tag] || tag}</span>`).join('')}
+                        </div>
+                        <div class="mt-4 space-y-2 text-sm text-gray-700">
+                            <div class="flex items-center"><i data-lucide="clock" class="w-4 h-4 text-gray-500 mr-2"></i><span>${hospital.hours}</span></div>
+                            <div class="flex items-center"><i data-lucide="phone" class="w-4 h-4 text-gray-500 mr-2"></i><span>${hospital.phone}</span></div>
+                            <div class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 text-gray-500 mr-2"></i><span>${hospital.address}</span></div>
+                        </div>
+                        <div class="mt-3">
+                            <span class="text-xs text-gray-500">${langPack['languages_spoken']}: ${hospital.languages.join(', ')}</span>
+                        </div>
+                    </div>
+                `;
+                hospitalsListContainer.innerHTML += hospitalCard;
+            });
+
+            document.querySelectorAll('#hospital-filter-buttons button').forEach(button => {
+                const isActive = button.dataset.langKey === filterTag;
+                button.classList.toggle('bg-blue-500', isActive);
+                button.classList.toggle('text-white', isActive);
+                button.classList.toggle('bg-gray-100', !isActive);
+                button.classList.toggle('text-gray-700', !isActive);
+            });
+             // Re-render Lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+
+        function renderRecords() {
+            recordsListContainer.innerHTML = '';
+            const langPack = dynamicTranslations[currentLang];
+            const medicalRecordsData = [ 
+                {
+                    titleKey: 'record_bp_med_title',
+                    typeKey: 'record_type_prescription',
+                    detailsKey: 'record_bp_med_details',
+                    doctor: 'Dr. Sarah Johnson',
+                    date: '2024-01-15',
+                    icon: `<i data-lucide="pill" class="w-8 h-8 text-purple-500"></i>`
+                },
+                {
+                    titleKey: 'record_checkup_title',
+                    typeKey: 'record_type_visit',
+                    detailsKey: 'record_checkup_details',
+                    doctor: 'Dr. Michael Chen',
+                    date: '2024-01-10',
+                    icon: `<i data-lucide="user" class="w-8 h-8 text-blue-500"></i>`
+
+                },
+                {
+                    titleKey: 'record_allergy_title',
+                    typeKey: 'record_type_lab',
+                    detailsKey: 'record_allergy_details',
+                    doctor: 'Dr. Emily White',
+                    date: '2023-11-20',
+                    icon: `<i data-lucide="flask-round" class="w-8 h-8 text-green-500"></i>`
+                }
+            ];
+
+            medicalRecordsData.forEach(record => {
+                const recordCard = `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-start space-x-4">
+                        <div class="flex-shrink-0 pt-1">
+                            ${record.icon}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm text-gray-600">${langPack[record.typeKey]}</p>
+                                    <h3 class="font-bold text-md">${langPack[record.titleKey]}</h3>
+                                </div>
+                                <p class="text-xs text-gray-500 flex-shrink-0">${record.date}</p>
+                            </div>
+                            <p class="text-sm text-gray-800 mt-2">${langPack[record.detailsKey]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${record.doctor}</p>
+                            <div class="text-right mt-2">
+                                <a href="#" class="text-sm font-semibold text-blue-500 hover:underline">${langPack['view_details']}</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                recordsListContainer.innerHTML += recordCard;
+            });
+             // Re-render Lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+        
+        // This function renders the initial/popular medicines list OR the search result card
+        function renderMedicinesList(results = null) {
+            medicinesListContainer.innerHTML = '';
+            const langPack = dynamicTranslations[currentLang];
+            const resultsContainer = document.getElementById('medicine-info-result');
+            
+            if (!results || Object.keys(results).length === 0 || !results.name) {
+                 resultsContainer.querySelector('h2').innerText = langPack['popular_medicines'];
+                 
+                 const popularMeds = ['Lisinopril', 'Metformin', 'Atorvastatin'];
+                 
+                 popularMeds.forEach(medName => {
+                    const medCard = `
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow" data-medicine-name="${medName}">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="pill" class="w-6 h-6 text-purple-500"></i>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">${medName}</h3>
+                                    <p class="text-xs text-gray-500">Static Mock Data</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    medicinesListContainer.innerHTML += medCard;
+                });
+            } else {
+                 resultsContainer.querySelector('h2').innerText = 'Search Result';
+                 const medCard = `
+                        <div class="col-span-2 bg-white p-4 rounded-lg border border-purple-300 shadow-lg cursor-pointer hover:shadow-xl transition-shadow" data-medicine-name="${results.name}" data-data-mode="search">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="pill" class="w-8 h-8 text-purple-600"></i>
+                                <div>
+                                    <h3 class="font-bold text-lg text-purple-800">${results.name}</h3>
+                                    <p class="text-sm text-gray-600">${results.generic || langPack['med_search_instructions']}</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-purple-500 mt-2 font-semibold">${langPack['med_usage']}: ${results.usage}</p>
+                            <div class="text-right mt-3">
+                                <a href="#" class="text-sm font-semibold text-purple-500 hover:underline">${langPack['view_details']}</a>
+                            </div>
+                        </div>
+                    `;
+                medicinesListContainer.innerHTML = medCard;
+            }
+
+            document.querySelectorAll('#medicines-list [data-medicine-name]').forEach(card => {
+                card.addEventListener('click', () => {
+                    const medName = card.dataset.medicineName;
+                    const dataMode = card.dataset.dataMode === 'search' ? 'search' : 'mock';
+                    
+                    renderMedicineDetails(medName, dataMode);
+                    showScreen('medicine-details-screen');
+                });
+            });
+             // Re-render Lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+        
+        // NEW GEMINI FUNCTION: Real-Time Medicine Information Fetch
+        async function fetchMedicineInformation(query) {
+            const resultContainer = document.getElementById('medicine-info-result');
+            const loader = document.getElementById('medicine-search-loader');
+            const button = document.getElementById('search-medicine-button');
+            const langPack = dynamicTranslations[currentLang];
+
+            resultContainer.innerHTML = '';
+            loader.classList.remove('hidden');
+            button.disabled = true;
+            
+            const languageName = languageMap[currentLang];
+            
+            const systemPrompt = `You are an expert pharmacist and medical information specialist. For the medicine named "${query}", find its generic name, primary usage, common side effects (list top 3-5), and precautions. You must use the Google Search tool for grounding. Format the output as a valid JSON object. Do NOT add any surrounding markdown or text. Translate all values into ${languageName}.`;
+            
+            const userQuery = `Provide the name, generic name, usage, side effects, and precautions for the medicine: ${query}`;
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            name: { type: "STRING" },
+                            generic: { type: "STRING" },
+                            usage: { type: "STRING" },
+                            sideEffects: { type: "ARRAY", items: { type: "STRING" } },
+                            precautions: { type: "ARRAY", items: { type: "STRING" } },
+                        }
+                    }
+                }
+            };
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (jsonText) {
+                    const cleanedJsonText = jsonText
+                        .replace(/```json|```/g, '') 
+                        .replace(/\\n/g, '')          
+                        .trim();
+                    
+                    const parsedData = JSON.parse(cleanedJsonText);
+                    
+                    if (parsedData.name && parsedData.usage) {
+                        currentMedicineInfo = { 
+                            ...parsedData, 
+                            alternatives: [], // Add empty arrays for missing mock fields
+                            interactions: [],
+                            dosage: langPack['med_dosage'] // Use a fallback dosage text since AI might not provide it structured
+                        }; 
+                        renderMedicinesList(currentMedicineInfo); 
+                        document.getElementById('medicine-info-result').querySelector('h2').innerText = `${langPack['medicines_page_title']} (${query})`;
+                        return;
+                    }
+                }
+                
+                throw new Error("Invalid or insufficient data received.");
+                
+            } catch (error) {
+                console.error("Error fetching medicine data:", error);
+                resultContainer.innerHTML = `<p class="text-center text-red-500 mt-8">${langPack['med_search_no_result']}</p>`;
+            } finally {
+                loader.classList.add('hidden');
+                button.disabled = false;
+            }
+        }
+
+        // NEW: Function to simulate real-time availability check
+        function checkRealTimeAvailability(medName) {
+            const statusEl = document.getElementById('availability-status');
+            const listEl = document.getElementById('availability-list');
+            const button = document.getElementById('check-availability-btn');
+            const langPack = dynamicTranslations[currentLang];
+            
+            statusEl.innerText = langPack['loading'];
+            listEl.innerHTML = '';
+            button.disabled = true;
+
+            const results = mockAvailabilityData[medName] || mockAvailabilityData['Lisinopril'];
+            
+            setTimeout(() => {
+                button.disabled = false;
+                
+                if (!results || results.length === 0) {
+                    statusEl.innerText = langPack['out_of_stock'];
+                    return;
+                }
+
+                const availableResults = results.filter(r => r.stock);
+
+                if(availableResults.length > 0) {
+                     statusEl.innerText = `${availableResults.length} ${langPack['nearby_locations']}`;
+                } else {
+                     statusEl.innerText = langPack['out_of_stock'];
+                }
+               
+                
+                availableResults.forEach(item => {
+                    const stockStatus = item.stock 
+                        ? `<span class="text-green-600 font-semibold">${langPack['available_at']}</span>`
+                        : `<span class="text-red-600 font-semibold">${langPack['out_of_stock']}</span>`;
+                    
+                    const itemHTML = `
+                        <div class="flex justify-between items-center p-3 bg-white border border-gray-200 rounded-lg">
+                            <div>
+                                <p class="font-semibold text-gray-800">${item.name}</p>
+                                <p class="text-xs text-gray-500">${item.distance} ${langPack['away']}</p>
+                            </div>
+                            ${stockStatus}
+                        </div>
+                    `;
+                    listEl.innerHTML += itemHTML;
+                });
+
+            }, 1500); 
+        }
+        
+        // NEW GEMINI FUNCTION: Suggest Natural Alternatives using Search Grounding
+        async function suggestNaturalAlternatives(medName, dataMode) {
+            const resultDiv = document.getElementById('alt-suggestions-result');
+            const loader = document.getElementById('alt-suggestions-loader');
+            const button = document.getElementById('suggest-alternatives-btn');
+            const langPack = dynamicTranslations[currentLang];
+
+            resultDiv.innerHTML = '';
+            loader.classList.remove('hidden');
+            button.disabled = true;
+
+            const languageName = languageMap[currentLang];
+            const queryName = dataMode === 'mock' ? medName : currentMedicineInfo.name;
+
+            const systemPrompt = `You are an expert in natural and complementary medicine. Your task is to provide two to three safe and scientifically researched natural or herbal alternatives to the drug named "${queryName}". Explain the potential benefit of each alternative concisely. IMPORTANT: Use the Google Search tool to find up-to-date and reliable information. Format the output using markdown lists and headings, and provide the entire response in ${languageName}.`;
+
+            const userQuery = `Find natural alternatives for the medicine: ${queryName}.`;
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }], 
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API Response Error:", response.status, response.statusText, errorBody);
+                    throw new Error(`API error: ${response.statusText} (${response.status})`);
+                }
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    let markdownText = candidate.content.parts[0].text;
+                    // Basic Markdown to HTML conversion
+                    markdownText = markdownText.replace(/^### (.*)$/gm, '<h4 class="font-bold text-lg mt-3 text-yellow-900">$1</h4>');
+                    markdownText = markdownText.replace(/^## (.*)$/gm, '<h3 class="font-bold text-xl mt-4 text-yellow-900">$1</h3>');
+                    markdownText = markdownText.replace(/^\* (.*)$/gm, '<li class="ml-4 list-disc text-yellow-800">$1</li>');
+                    
+                    resultDiv.innerHTML = `<div class="p-4 bg-white rounded-lg border border-yellow-200">${markdownText}</div>
+                                          <p class="text-xs text-gray-500 mt-2 text-center italic">${langPack['alt_disclaimer']}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="text-red-500">${langPack['ai_disclaimer']}</p>`;
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for alternatives:", error);
+                resultDiv.innerHTML = `<p class="text-red-500">An error occurred while fetching alternatives. Please try again.</p>`;
+            } finally {
+                loader.classList.add('hidden');
+                button.disabled = false;
+            }
+        }
+        
+        // UPDATED: Now dynamically renders content based on dataMode ('mock' or 'search')
+        function renderMedicineDetails(medName, dataMode) {
+            const langPack = dynamicTranslations[currentLang];
+            let detailsData;
+
+            if (dataMode === 'mock') {
+                 const mockData = {
+                    'Lisinopril': {
+                        generic: langPack['med_lisinopril_generic'], usage: langPack['med_lisinopril_usage'], dosage: langPack['med_lisinopril_dosage'],
+                        sideEffects: [langPack['se_cough'], langPack['se_dizziness'], langPack['se_headache']],
+                        precautions: [langPack['prec_kidney'], langPack['prec_pregnancy']],
+                        alternatives: [langPack['alt_ramipril'], langPack['alt_losartan']],
+                        interactions: [langPack['int_potassium'], langPack['int_nsaids']]
+                    },
+                    'Metformin': {
+                        generic: langPack['med_metformin_generic'], usage: langPack['med_metformin_usage'], dosage: langPack['med_metformin_dosage'],
+                        sideEffects: [langPack['se_diarrhea'], langPack['se_nausea'], langPack['se_stomach_upset'], langPack['se_metallic_taste'], langPack['se_weakness']],
+                        precautions: [langPack['prec_meals'], langPack['prec_kidney_tests'], langPack['prec_alcohol'], langPack['prec_sugar_levels']],
+                        alternatives: [langPack['alt_glipizide'], langPack['alt_glyburide'], langPack['alt_sitagliptin'], langPack['alt_empagliflozin']],
+                        interactions: [langPack['int_contrast_agents'], langPack['int_diuretics'], langPack['int_corticosteroids'], langPack['int_birth_control']]
+                    },
+                    'Atorvastatin': {
+                         generic: langPack['med_atorvastatin_generic'], usage: langPack['med_atorvastatin_usage'], dosage: langPack['med_atorvastatin_dosage'],
+                        sideEffects: [langPack['se_muscle_pain'], langPack['se_diarrhea'], langPack['se_joint_pain']],
+                        precautions: [langPack['prec_liver'], langPack['prec_alcohol_atorv']],
+                        alternatives: [langPack['alt_simvastatin'], langPack['alt_rosuvastatin']],
+                        interactions: [langPack['int_grapefruit'], langPack['int_antifungals']]
+                    }
+                };
+                detailsData = mockData[medName];
+
+            } else if (dataMode === 'search') {
+                detailsData = currentMedicineInfo;
+                // FIX: Ensure all array properties exist for rendering even if empty
+                detailsData.sideEffects = detailsData.sideEffects || [];
+                detailsData.precautions = detailsData.precautions || [];
+                detailsData.alternatives = detailsData.alternatives || [langPack['med_search_no_result']]; 
+                detailsData.interactions = detailsData.interactions || [langPack['med_search_no_result']];
+            }
+
+            if (!detailsData) {
+                medicineDetailsContainer.innerHTML = `<div class="p-6 text-center text-red-500">${langPack['med_search_no_result']}</div>`;
+                return;
+            }
+
+            const detailsHTML = `
+                <header class="p-6 flex items-center">
+                    <button id="back-to-medicines" class="p-2 rounded-full hover:bg-gray-100 mr-2">
+                        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-700"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">${medName}</h1>
+                        <p class="text-gray-500 mt-1">${detailsData.generic}</p>
+                    </div>
+                </header>
+                <div class="px-6 pb-6 space-y-4">
+                    
+                    <!-- Natural Alternatives Feature -->
+                    <div class="bg-yellow-50 p-4 rounded-lg space-y-3">
+                        <h3 class="font-bold text-yellow-800 flex items-center">
+                            <i data-lucide="leaf" class="w-5 h-5 mr-2"></i>
+                            ${langPack['alt_suggestions_title']}
+                        </h3>
+                        <button id="suggest-alternatives-btn" data-med-name="${medName}" data-data-mode="${dataMode}" class="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors">
+                            ${langPack['alt_suggestions_button']}
+                        </button>
+                        <div id="alt-suggestions-loader" class="hidden mt-2 flex justify-center">
+                            <div class="loader"></div>
+                        </div>
+                        <div id="alt-suggestions-result" class="mt-2 text-sm">
+                            <!-- AI suggestions will be rendered here -->
+                        </div>
+                    </div>
+                    <!-- END: Natural Alternatives Feature -->
+
+                    <!-- Real-Time Availability Tracker -->
+                    <div class="bg-purple-100 p-4 rounded-lg">
+                        <h3 class="font-bold text-purple-800 flex items-center">
+                            <i data-lucide="map-pin" class="w-5 h-5 mr-2"></i>
+                            ${langPack['realtime_availability_title']}
+                        </h3>
+                        <div class="mt-2 space-y-2">
+                            <p class="text-sm text-purple-700">${langPack['realtime_availability_subtitle']}</p>
+                            <button id="check-availability-btn" class="w-full bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors">
+                                ${langPack['check_availability_button']}
+                            </button>
+                            <div id="availability-result" class="mt-3 space-y-3">
+                                <p id="availability-status" class="text-sm italic text-gray-600">${langPack['availability_placeholder']}</p>
+                                <div id="availability-list" class="space-y-2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Real-Time Availability Tracker -->
+
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-blue-800 flex items-center"><i data-lucide="info" class="w-5 h-5 mr-2"></i>${langPack['med_usage']}</h3>
+                        <p class="mt-1 text-blue-700 text-sm">${detailsData.usage}</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-green-800 flex items-center"><i data-lucide="clock" class="w-5 h-5 mr-2"></i>${langPack['med_dosage']}</h3>
+                        <p class="mt-1 text-green-700 text-sm">${detailsData.dosage || langPack['med_dosage']}</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-red-800 flex items-center"><i data-lucide="alert-circle" class="w-5 h-5 mr-2"></i>${langPack['med_side_effects']}</h3>
+                        <ul class="mt-2 list-disc list-inside text-red-700 text-sm space-y-1">
+                            ${(detailsData.sideEffects || []).map(effect => `<li>${effect}</li>`).join('')}
+                        </ul>
+                    </div>
+                     <div class="bg-purple-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-purple-800 flex items-center"><i data-lucide="git-fork" class="w-5 h-5 mr-2"></i>${langPack['med_alternatives']}</h3>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                           ${(detailsData.alternatives || []).map(alt => `<span class="text-xs font-semibold bg-purple-200 text-purple-800 px-2 py-1 rounded-full">${alt}</span>`).join('')}
+                        </div>
+                    </div>
+                     <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-yellow-800 flex items-center"><i data-lucide="shield-alert" class="w-5 h-5 mr-2"></i>${langPack['med_precautions']}</h3>
+                         <ul class="mt-2 text-yellow-700 text-sm space-y-2">
+                           ${(detailsData.precautions || []).map(prec => `<li class="flex items-start"><i data-lucide="check" class="w-4 h-4 mr-2 mt-0.5 text-yellow-600 flex-shrink-0"></i><span>${prec}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h3 class="font-bold text-gray-800 flex items-center"><i data-lucide="link" class="w-5 h-5 mr-2"></i>${langPack['med_interactions']}</h3>
+                        <ul class="mt-2 list-disc list-inside text-gray-700 text-sm space-y-1">
+                            ${(detailsData.interactions || []).map(interaction => `<li>${interaction}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            medicineDetailsContainer.innerHTML = detailsHTML;
+            document.getElementById('back-to-medicines').addEventListener('click', () => showScreen('medicines-screen'));
+            
+            document.getElementById('check-availability-btn').addEventListener('click', () => checkRealTimeAvailability(medName));
+            document.getElementById('suggest-alternatives-btn').addEventListener('click', (e) => {
+                const button = e.currentTarget;
+                suggestNaturalAlternatives(button.dataset.medName, button.dataset.dataMode);
+            });
+             // Re-render Lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+
+
+        async function handleSymptomAnalysis() {
+            const symptomsInput = document.getElementById('symptoms-input');
+            const resultDiv = document.getElementById('symptoms-result');
+            const loader = document.getElementById('symptoms-loader');
+            const analyzeButton = document.getElementById('analyze-symptoms-button');
+
+            const symptoms = symptomsInput.value;
+            if (!symptoms.trim()) {
+                resultDiv.innerHTML = `<p class="text-red-500">Please describe your symptoms first.</p>`;
+                resultDiv.classList.remove('hidden');
+                return;
+            }
+
+            loader.classList.remove('hidden');
+            resultDiv.classList.add('hidden');
+            analyzeButton.disabled = true;
+
+            const languageName = languageMap[currentLang];
+
+            const systemPrompt = `You are a medical AI assistant. Analyze the user's symptoms, provide a concise summary of possible conditions, suggest whether they should seek immediate medical attention (using a prominent bolded recommendation), and list relevant specialist types. Provide this in ${languageName} and use clear markdown for formatting.`;
+            const userQuery = `A user has the following symptoms: "${symptoms}". Analyze this.`;
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    // Simple Markdown to HTML conversion for the result block
+                    let markdownText = candidate.content.parts[0].text;
+                    markdownText = markdownText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+                    markdownText = markdownText.replace(/\n\n/g, '<p class="mt-2"></p>'); // Paragraphs
+                    markdownText = markdownText.replace(/^# (.*)$/gm, '<h1 class="text-2xl font-bold mt-4">$1</h1>'); // H1
+                    markdownText = markdownText.replace(/^## (.*)$/gm, '<h2 class="text-xl font-bold mt-3">$1</h2>'); // H2
+                    markdownText = markdownText.replace(/^### (.*)$/gm, '<h3 class="text-lg font-bold mt-2">$1</h3>'); // H3
+                    markdownText = markdownText.replace(/^\* (.*)$/gm, '<li class="ml-4 list-disc">$1</li>'); // List items
+                    
+                    resultDiv.innerHTML = markdownText;
+                } else {
+                    console.error("Invalid API response format:", result);
+                    resultDiv.innerHTML = `<p class="text-red-500">Sorry, I couldn't analyze the symptoms due to an unexpected response format. Please try again.</p>`;
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                resultDiv.innerHTML = `<p class="text-red-500">An error occurred. Please try again later.</p>`;
+            } finally {
+                loader.classList.add('hidden');
+                resultDiv.classList.remove('hidden');
+                analyzeButton.disabled = false;
+            }
+        }
+
+
+        // Event Listeners Setup
+        document.addEventListener('DOMContentLoaded', () => {
+            const languageButton = document.getElementById('language-button');
+            const languagePanel = document.getElementById('language-panel');
+            const languageOptions = document.querySelectorAll('.language-option');
+            const analyzeSymptomsButton = document.getElementById('analyze-symptoms-button');
+            
+            const hospitalSearchInput = document.getElementById('hospital-search-input');
+            const hospitalFilterButtons = document.querySelectorAll('#hospital-filter-buttons button');
+            const doctorSearchInput = document.getElementById('doctor-search-input');
+            const medicineSearchInput = document.getElementById('medicine-search-input');
+            const searchMedicineButton = document.getElementById('search-medicine-button');
+
+
+            // Initialize Leaflet Layer Group here
+            if (typeof L !== 'undefined' && typeof L.layerGroup === 'function') {
+                hospitalMarkers = L.layerGroup();
+            }
+
+            // FIX: Initialize Lucide icons on load
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+
+            
+            // Toggle language panel
+            if (languageButton) {
+                languageButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    languagePanel.classList.toggle('hidden');
+                });
+            }
+
+            // Select language
+            languageOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const lang = e.currentTarget.dataset.lang;
+                    changeLanguage(lang); 
+                    languagePanel.classList.add('hidden');
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                if (languagePanel && !languagePanel.classList.contains('hidden')) {
+                    languagePanel.classList.add('hidden');
+                }
+            });
+
+            // Set initial language
+            changeLanguage('en');
+
+            // Navigation event listeners
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    showScreen(item.dataset.screen);
+                });
+            });
+
+            // Home screen card click listeners
+             homeSymptomsCard.addEventListener('click', () => showScreen('symptoms-screen'));
+             homeTeleconsultationCard.addEventListener('click', () => showScreen('teleconsultation-screen'));
+             homeHospitalsCard.addEventListener('click', () => showScreen('hospitals-screen'));
+             homeRecordsCard.addEventListener('click', () => showScreen('records-screen'));
+             homeMedicinesCard.addEventListener('click', () => showScreen('medicines-screen'));
+             homeSosCard.addEventListener('click', () => showScreen('sos-screen'));
+
+            // Symptom analyzer button
+            if (analyzeSymptomsButton) {
+                analyzeSymptomsButton.addEventListener('click', handleSymptomAnalysis);
+            }
+
+            // --- SOS Press and Hold Logic ---
+            const preventDefaultHandler = (e) => e.preventDefault(); // Prevent text selection/drag on hold
+            
+            if (sosButton) {
+                // Combined Touch/Mouse Start
+                const startEvents = ['mousedown', 'touchstart'];
+                startEvents.forEach(event => {
+                    sosButton.addEventListener(event, (e) => {
+                        // Only start if it's the primary button (mouse click) or touch
+                        if (e.button === 0 || event === 'touchstart') {
+                            e.currentTarget.addEventListener('selectstart', preventDefaultHandler);
+                            startSosHold();
+                        }
+                    });
+                });
+
+                // Combined Touch/Mouse Stop/Cancel
+                const stopEvents = ['mouseup', 'touchend', 'mouseleave', 'touchcancel'];
+                stopEvents.forEach(event => {
+                    sosButton.addEventListener(event, (e) => {
+                        e.currentTarget.removeEventListener('selectstart', preventDefaultHandler);
+                        stopSosHold();
+                    });
+                });
+            }
+
+            // SOS Cancel Buttons
+            sosCancelInitialButton.addEventListener('click', () => showScreen('home-screen'));
+            sosCancelAlertButton.addEventListener('click', cancelSOS);
+
+
+            // --- Hospital Search & Filter Listeners ---
+            if (hospitalSearchInput) {
+                hospitalSearchInput.addEventListener('input', (e) => {
+                    const activeFilter = document.querySelector('#hospital-filter-buttons button.bg-blue-500').dataset.langKey;
+                    renderHospitals(activeFilter, e.target.value); 
+                });
+            }
+
+            hospitalFilterButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const filterKey = e.currentTarget.dataset.langKey;
+                    renderHospitals(filterKey, hospitalSearchInput.value); 
+                });
+            });
+            
+            // --- Doctor Search Listener ---
+            if (doctorSearchInput) {
+                doctorSearchInput.addEventListener('input', (e) => {
+                    renderDoctors(e.target.value);
+                });
+            }
+
+            // --- Medicine Search Listener ---
+            if (searchMedicineButton) {
+                searchMedicineButton.addEventListener('click', () => {
+                    const query = medicineSearchInput.value.trim();
+                    if (query) {
+                        fetchMedicineInformation(query);
+                    }
+                });
+                medicineSearchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                         const query = medicineSearchInput.value.trim();
+                         if (query) {
+                             fetchMedicineInformation(query);
+                         }
+                    }
+                });
+            }
+
+
+            // Set initial screen
+            showScreen('home-screen');
+        });
+
+    </script>
+</body>
+</html>

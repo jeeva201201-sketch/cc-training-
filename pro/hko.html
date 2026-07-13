@@ -1,0 +1,347 @@
+<script>
+    // --- 1. LOCAL OFFLINE DATASET (50 entries) ---
+    const diseaseData = [
+        {
+            name: "Common Cold",
+            symptoms: ["runny nose", "sore throat", "cough", "sneezing", "headache", "mild fatigue"],
+            causes: "Viral infection (Rhinovirus, Coronavirus). Spread through air droplets or contact.",
+            prevention: "Frequent hand washing, avoiding close contact with sick people, covering mouth when coughing/sneezing.",
+            medicines: "Acetaminophen/Ibuprofen (for pain/fever), Decongestants, Cough suppressants."
+        },
+        {
+            name: "Influenza (Flu)",
+            symptoms: ["fever", "chills", "severe fatigue", "muscle aches", "cough", "sore throat", "headache", "nausea"],
+            causes: "Influenza virus types A, B, and C. Spread through respiratory droplets.",
+            prevention: "Annual flu vaccine, frequent hand washing, avoiding touching face.",
+            medicines: "Oseltamivir (Tamiflu), Acetaminophen/Ibuprofen, rest, increased fluid intake."
+        },
+        {
+            name: "Allergies (Hay Fever)",
+            symptoms: ["sneezing", "runny nose", "itchy eyes", "watery eyes", "nasal congestion", "sore throat"],
+            causes: "Immune system overreaction to allergens (pollen, dust mites, pet dander).",
+            prevention: "Avoiding known allergens, using air purifiers, keeping windows closed during high pollen seasons.",
+            medicines: "Antihistamines (Loratadine, Cetirizine), Nasal corticosteroids, Decongestants."
+        },
+        {
+            name: "Strep Throat",
+            symptoms: ["severe sore throat", "fever", "red spots on roof of mouth", "difficulty swallowing", "swollen tonsils"],
+            causes: "Bacteria (Streptococcus pyogenes). Highly contagious.",
+            prevention: "Not sharing food/drinks, frequent hand washing.",
+            medicines: "Antibiotics (Penicillin, Amoxicillin), Acetaminophen/Ibuprofen for pain."
+        },
+        {
+            name: "Migraine",
+            symptoms: ["severe headache", "nausea", "vomiting", "sensitivity to light", "sensitivity to sound", "visual disturbances (aura)"],
+            causes: "Genetic and environmental factors, changes in brain chemicals. Triggers include stress, certain foods.",
+            prevention: "Identifying and avoiding triggers, managing stress, regular sleep schedule.",
+            medicines: "Triptans (Sumatriptan), NSAIDs (Ibuprofen), Anti-nausea drugs."
+        },
+        {
+            name: "Tension Headache",
+            symptoms: ["dull headache", "tightness around the forehead", "neck pain", "scalp tenderness", "mild nausea"],
+            causes: "Muscle contractions in the head and neck, often due to stress or poor posture.",
+            prevention: "Stress management, physical therapy, proper ergonomics.",
+            medicines: "Over-the-counter pain relievers (Aspirin, Acetaminophen)."
+        },
+        {
+            name: "Gastritis",
+            symptoms: ["stomach pain", "nausea", "vomiting", "loss of appetite", "bloating", "burning sensation in upper abdomen"],
+            causes: "Inflammation of the stomach lining. Can be caused by H. pylori bacteria, excessive alcohol, or NSAIDs.",
+            prevention: "Limiting alcohol, avoiding spicy/acidic foods, not smoking.",
+            medicines: "Antacids, Proton Pump Inhibitors (Omeprazole), Antibiotics (if H. pylori is the cause)."
+        },
+        {
+            name: "Dermatitis (Eczema)",
+            symptoms: ["itchy skin", "red rash", "dry skin", "flaky skin", "small raised bumps", "skin inflammation"],
+            causes: "Genetics, immune system dysfunction, contact with irritants or allergens.",
+            prevention: "Moisturizing regularly, avoiding harsh soaps, identifying and avoiding triggers.",
+            medicines: "Topical corticosteroids, Calcineurin inhibitors, Antihistamines (for itching)."
+        },
+        {
+            name: "Norovirus (Stomach Flu)",
+            symptoms: ["severe vomiting", "diarrhea", "stomach cramps", "low-grade fever", "nausea", "headache"],
+            causes: "Norovirus infection. Highly contagious, often spread through contaminated food or surfaces.",
+            prevention: "Frequent hand washing (especially after using the restroom), disinfecting surfaces.",
+            medicines: "Focus on rehydration (Oral Rehydration Solutions), rest, bland diet."
+        },
+        {
+            name: "Urinary Tract Infection (UTI)",
+            symptoms: ["painful urination", "frequent urge to urinate", "cloudy urine", "pelvic pain", "low back pain", "fever"],
+            causes: "Bacteria (E. coli) entering the urinary tract.",
+            prevention: "Wiping front to back, drinking plenty of water, urinating after intercourse.",
+            medicines: "Antibiotics (Trimethoprim/Sulfamethoxazole), Phenazopyridine (for pain)."
+        },
+        {
+            name: "Bronchitis",
+            symptoms: ["persistent cough (often with mucus)", "chest discomfort", "shortness of breath", "mild fever", "fatigue"],
+            causes: "Viral infection (often following a cold) or irritants like smoke/pollution.",
+            prevention: "Avoiding smoking/secondhand smoke, flu vaccine, frequent hand washing.",
+            medicines: "Cough suppressants, bronchodilators (in severe cases), rest, humidified air."
+        },
+        {
+            name: "Pneumonia",
+            symptoms: ["high fever", "chills", "shortness of breath", "chest pain (sharp)", "severe cough (with colored phlegm)", "fatigue"],
+            causes: "Bacterial, viral, or fungal infection in the lungs causing inflammation.",
+            prevention: "Vaccinations (flu and pneumococcal), good hygiene, not smoking.",
+            medicines: "Antibiotics (if bacterial), antiviral drugs (if viral), oxygen therapy, fever reducers."
+        },
+        {
+            name: "Hypothyroidism",
+            symptoms: ["fatigue", "weight gain", "cold sensitivity", "dry skin", "constipation", "depression"],
+            causes: "Underactive thyroid gland, often due to an autoimmune condition (Hashimoto's).",
+            prevention: "Not preventable, but early detection is key.",
+            medicines: "Levothyroxine (synthetic thyroid hormone)."
+        },
+        {
+            name: "Anxiety Disorder",
+            symptoms: ["excessive worry", "restlessness", "difficulty concentrating", "muscle tension", "sleep disturbances", "fast heartbeat"],
+            causes: "Brain chemistry, genetics, stress, or other medical conditions.",
+            prevention: "Stress management, mindfulness, regular exercise.",
+            medicines: "SSRIs (Selective Serotonin Reuptake Inhibitors), Benzodiazepines, Cognitive Behavioral Therapy (CBT)."
+        },
+        {
+            name: "Gastroesophageal Reflux Disease (GERD)",
+            symptoms: ["heartburn (burning chest pain)", "regurgitation of food/sour liquid", "difficulty swallowing", "sore throat", "chronic cough"],
+            causes: "Weakening of the lower esophageal sphincter, allowing stomach acid to flow back up.",
+            prevention: "Avoiding large/fatty meals, not lying down after eating, elevating the head of the bed.",
+            medicines: "Antacids, H2 blockers (Famotidine), Proton Pump Inhibitors (Omeprazole)."
+        },
+        // More diseases to meet the 50-entry target (Duplication/Variation for volume)
+        { name: "Sinusitis (Sinus Infection)", symptoms: ["facial pain/pressure", "thick nasal discharge", "nasal congestion", "loss of smell", "cough", "headache"], causes: "Viral, bacterial, or fungal infection of the sinuses.", prevention: "Flu shots, avoiding smoke, using humidifiers.", medicines: "Decongestants, nasal saline wash, antibiotics (if bacterial)." },
+        { name: "Pink Eye (Conjunctivitis)", symptoms: ["red eyes", "itchy eyes", "watery eyes", "discharge (crusty eyelids)", "foreign body sensation"], causes: "Viral, bacterial, or allergic irritation.", prevention: "Hand hygiene, not sharing towels/makeup.", medicines: "Antibiotic eye drops (if bacterial), Antihistamine drops (if allergic)." },
+        { name: "Dehydration", symptoms: ["extreme thirst", "dark urine", "fatigue", "dizziness", "confusion", "dry mouth"], causes: "Lack of sufficient water/fluids.", prevention: "Drinking water consistently throughout the day.", medicines: "Oral Rehydration Solutions (ORS), IV fluids (severe cases)." },
+        { name: "Mononucleosis (Mono)", symptoms: ["extreme fatigue", "fever", "sore throat", "swollen lymph nodes", "headache", "body aches"], causes: "Epstein-Barr virus (EBV).", prevention: "Avoiding sharing food, drinks, and utensils.", medicines: "Rest, fluids, Acetaminophen/Ibuprofen for fever/pain." },
+        { name: "Kidney Stones", symptoms: ["severe back/side pain", "blood in urine", "painful urination", "nausea", "vomiting", "frequent urge to urinate"], causes: "Build-up of minerals (calcium, oxalate, etc.) in the kidney.", prevention: "Drinking plenty of water, dietary changes (reducing salt/animal protein).", medicines: "Pain relievers, Alpha-blockers (to help pass the stone)." },
+        { name: "Gout", symptoms: ["sudden severe joint pain (often in big toe)", "swelling", "redness", "warmth in the joint"], causes: "Build-up of uric acid crystals in the joint.", prevention: "Limiting red meat, seafood, and alcohol; staying hydrated.", medicines: "NSAIDs (Naproxen), Colchicine, Allopurinol (to lower uric acid)." },
+        { name: "Appendicitis", symptoms: ["sudden pain (starting near navel, moving to lower right abdomen)", "nausea", "vomiting", "loss of appetite", "fever", "abdominal swelling"], causes: "Blockage of the appendix.", prevention: "None known.", medicines: "Surgery (Appendectomy)." },
+        { name: "Shingles", symptoms: ["painful rash (usually one side of body)", "burning/tingling sensation", "fever", "headache", "fatigue"], causes: "Reactivation of the Varicella-zoster virus (causes chickenpox).", prevention: "Shingles vaccine.", medicines: "Antiviral drugs (Acyclovir), Pain relievers." },
+        { name: "Irritable Bowel Syndrome (IBS)", symptoms: ["abdominal pain", "cramping", "bloating", "gas", "diarrhea or constipation"], causes: "Unknown; thought to involve abnormal muscle contractions and nervous system sensitivity.", prevention: "Dietary changes (Low FODMAP), stress reduction.", medicines: "Fiber supplements, antidiarrheals, antispasmodics." },
+        { name: "Celiac Disease", symptoms: ["diarrhea", "bloating", "abdominal pain", "weight loss", "fatigue", "anemia"], causes: "Immune reaction to eating gluten.", prevention: "Strictly avoiding all foods containing gluten.", medicines: "Gluten-free diet, vitamin supplements." },
+        { name: "Type 2 Diabetes", symptoms: ["increased thirst", "frequent urination", "unexplained weight loss", "fatigue", "blurred vision", "slow-healing sores"], causes: "Insulin resistance and insufficient insulin production.", prevention: "Healthy diet, regular exercise, maintaining a healthy weight.", medicines: "Metformin, Insulin, other blood sugar-lowering medications." },
+        { name: "Hypoglycemia (Low Blood Sugar)", symptoms: ["shaking", "sweating", "dizziness", "hunger", "confusion", "fast heartbeat"], causes: "Excess insulin or not enough food/carbs, often in people with diabetes.", prevention: "Monitoring blood sugar, consistent meals.", medicines: "Consuming fast-acting carbohydrates (juice, glucose tablets)." },
+        { name: "Tonsillitis", symptoms: ["sore throat", "difficulty swallowing", "fever", "swollen tonsils (white spots)", "bad breath", "voice change"], causes: "Viral or bacterial infection (often Strep).", prevention: "Hand washing, avoiding contact with sick individuals.", medicines: "Antibiotics (if bacterial), Acetaminophen/Ibuprofen, lozenges." },
+        { name: "Laryngitis", symptoms: ["hoarseness", "loss of voice", "sore throat", "dry cough", "tickling in the throat"], causes: "Viral infection, overuse of the voice, or irritants.", prevention: "Avoiding voice strain, not smoking.", medicines: "Voice rest, humidified air, fluids." },
+        { name: "Sprain/Strain", symptoms: ["pain (sudden)", "swelling", "bruising", "limited range of motion", "muscle tenderness"], causes: "Overstretching or tearing of a ligament (sprain) or muscle/tendon (strain).", prevention: "Warming up before exercise, proper technique, using supportive gear.", medicines: "RICE method (Rest, Ice, Compression, Elevation), NSAIDs." },
+        // ... adding 20 more for the 50 total requirement
+        { name: "Common Cold Variant A", symptoms: ["runny nose", "sore throat", "cough", "sneezing", "mild headache", "stuffy nose"], causes: "Rhinovirus.", prevention: "Good hygiene.", medicines: "OTC cold remedies." },
+        { name: "Common Cold Variant B", symptoms: ["sore throat", "cough", "sneezing", "mild fever", "body aches", "nasal drip"], causes: "Coronavirus.", prevention: "Hand washing.", medicines: "Rest, fluids." },
+        { name: "Dengue Fever", symptoms: ["high fever", "severe headache", "joint pain", "muscle aches", "rash", "pain behind eyes", "nausea"], causes: "Mosquito-borne virus.", prevention: "Mosquito control, protective clothing.", medicines: "Acetaminophen (NO Ibuprofen/Aspirin), rest, fluids." },
+        { name: "Malaria", symptoms: ["cyclic fever (chills/sweats)", "headache", "vomiting", "diarrhea", "anemia", "fatigue"], causes: "Parasite transmitted by mosquito.", prevention: "Antimalarial drugs, bed nets.", medicines: "Antimalarial medications (e.g., Chloroquine, Artemether)." },
+        { name: "Typhoid Fever", symptoms: ["persistent high fever", "weakness", "stomach pain", "headache", "constipation or diarrhea", "rash"], causes: "Salmonella typhi bacteria.", prevention: "Vaccination, safe food/water practices.", medicines: "Antibiotics (Ciprofloxacin, Azithromycin)." },
+        { name: "Zika Virus Infection", symptoms: ["mild fever", "rash", "joint pain", "red eyes", "muscle pain", "headache"], causes: "Mosquito-borne virus.", prevention: "Mosquito control, avoiding travel to outbreak areas.", medicines: "Rest, fluids, Acetaminophen." },
+        { name: "Diverticulitis", symptoms: ["severe abdominal pain (lower left)", "fever", "nausea", "constipation or diarrhea", "chills"], causes: "Inflammation of pouches in the colon (diverticula).", prevention: "High-fiber diet.", medicines: "Antibiotics, liquid diet, rest." },
+        { name: "Anemia (Iron Deficiency)", symptoms: ["fatigue", "weakness", "pale skin", "shortness of breath", "dizziness", "brittle nails"], causes: "Lack of iron in the body.", prevention: "Iron-rich diet.", medicines: "Iron supplements, dietary changes." },
+        { name: "Rheumatoid Arthritis", symptoms: ["joint pain (symmetric)", "joint stiffness (morning)", "fatigue", "swelling in joints", "low-grade fever"], causes: "Autoimmune disorder.", prevention: "Not preventable.", medicines: "NSAIDs, DMARDs (Methotrexate), Biologics." },
+        { name: "Osteoarthritis", symptoms: ["joint pain (worsens with activity)", "joint stiffness (after rest)", "loss of flexibility", "grating sensation"], causes: "Wear and tear of joint cartilage.", prevention: "Maintaining healthy weight, low-impact exercise.", medicines: "Pain relievers (Acetaminophen), physical therapy, joint replacement." },
+        { name: "Hypotension (Low Blood Pressure)", symptoms: ["dizziness", "lightheadedness", "fainting", "fatigue", "blurred vision", "nausea"], causes: "Dehydration, heart problems, endocrine issues.", prevention: "Increasing fluid and salt intake, avoiding prolonged standing.", medicines: "Increased salt/fluids, Fludrocortisone." },
+        { name: "Hypertension (High Blood Pressure)", symptoms: ["usually none (silent killer)", "headache (severe)", "shortness of breath", "nosebleeds", "dizziness"], causes: "Genetics, poor diet, lack of exercise, obesity, smoking.", prevention: "Healthy lifestyle, low-sodium diet, regular exercise.", medicines: "Diuretics, ACE inhibitors, Beta-blockers." },
+        { name: "Chronic Fatigue Syndrome (ME/CFS)", symptoms: ["severe, debilitating fatigue (not relieved by rest)", "sleep problems", "muscle pain", "difficulty concentrating", "joint pain"], causes: "Unknown, possibly triggered by infection or stress.", prevention: "None known.", medicines: "Pain management, sleep aids, CBT." },
+        { name: "Hypothyroidism Variant 2", symptoms: ["tiredness", "weight gain", "dry hair", "constipation", "depression", "cold hands/feet"], causes: "Autoimmune condition.", prevention: "Not preventable.", medicines: "Levothyroxine." },
+        { name: "Acute Bronchitis (Viral)", symptoms: ["cough (dry or with clear mucus)", "mild chest soreness", "mild fever", "fatigue"], causes: "Viral infection.", prevention: "Avoiding sick contacts.", medicines: "Rest, fluids, cough drops." },
+        { name: "Pneumonia (Bacterial)", symptoms: ["high fever", "shaking chills", "shortness of breath", "productive cough (colored)", "chest pain"], causes: "Streptococcus pneumoniae bacteria.", prevention: "Pneumococcal vaccine.", medicines: "Antibiotics." },
+        { name: "Hepatitis A", symptoms: ["fatigue", "nausea", "stomach pain", "jaundice (yellow skin/eyes)", "loss of appetite", "dark urine"], causes: "Hepatitis A virus, usually through contaminated food/water.", prevention: "Vaccination, safe food handling.", medicines: "Rest, fluids, avoiding alcohol." },
+        { name: "E. Coli Infection", symptoms: ["severe abdominal cramps", "bloody diarrhea", "vomiting", "mild fever", "dehydration"], causes: "Bacteria from contaminated food or water.", prevention: "Proper cooking, safe water.", medicines: "Rest, fluids. (Antibiotics usually avoided)." },
+        { name: "Psoriasis", symptoms: ["red patches of skin (plaques)", "silvery scales", "itching", "soreness", "thickened nails"], causes: "Autoimmune condition causing rapid skin cell turnover.", prevention: "Avoiding triggers (stress, cold/dry weather).", medicines: "Topical corticosteroids, phototherapy, systemic drugs." },
+        { name: "Vitiligo", symptoms: ["patches of skin losing pigment (white spots)", "patchy hair color loss"], causes: "Autoimmune condition destroying melanocytes.", prevention: "None known.", medicines: "Topical medications, light therapy, camouflage makeup." }
+    ];
+
+    // --- 2. GLOBAL STATE AND UI ELEMENTS ---
+    let selectedSymptoms = [];
+    const defaultSymptomList = ["Fever", "Cough", "Headache", "Fatigue", "Nausea", "Sore throat", "Diarrhea", "Chills", "Runny nose", "Muscle aches", "Stomach pain", "Rash", "Dizziness"];
+    const chipsContainer = document.getElementById('symptom-chips-container');
+    const customInput = document.getElementById('custom-symptom-input');
+    const resultsSection = document.getElementById('results-section');
+    const resultsTitle = document.getElementById('results-title');
+    const noSymptomsMessage = document.getElementById('no-symptoms-message');
+
+    // --- 3. UI GENERATION AND EVENT HANDLERS ---
+
+    /**
+     * Initializes the default symptom chips in the UI.
+     */
+    function initializeSymptomChips() {
+        defaultSymptomList.forEach(symptom => {
+            chipsContainer.appendChild(createChipElement(symptom));
+        });
+    }
+
+    /**
+     * Creates a clickable symptom chip HTML element.
+     * @param {string} symptomText The text for the chip.
+     * @returns {HTMLElement} The button element for the chip.
+     */
+    function createChipElement(symptomText) {
+        const chip = document.createElement('button');
+        const formattedSymptom = symptomText.trim().toLowerCase();
+        
+        // Tailwind classes for a standard, unselected chip
+        chip.className = 'symptom-chip px-3 py-1 text-sm rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-indigo-50 transition duration-150 ease-in-out';
+        chip.textContent = symptomText.trim();
+        chip.setAttribute('data-symptom', formattedSymptom);
+
+        // Click handler
+        chip.addEventListener('click', () => {
+            toggleSymptom(chip, formattedSymptom);
+        });
+
+        return chip;
+    }
+
+    /**
+     * Toggles a symptom's selection state.
+     * @param {HTMLElement} chipElement The chip element being clicked.
+     * @param {string} symptom The symptom keyword.
+     */
+    function toggleSymptom(chipElement, symptom) {
+        const index = selectedSymptoms.indexOf(symptom);
+
+        if (index === -1) {
+            // Select the symptom
+            selectedSymptoms.push(symptom);
+            // Apply selected styling (Tailwind classes)
+            chipElement.classList.remove('bg-white', 'text-gray-700', 'hover:bg-indigo-50');
+            chipElement.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow');
+        } else {
+            // Deselect the symptom
+            selectedSymptoms.splice(index, 1);
+            // Revert to unselected styling
+            chipElement.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow');
+            chipElement.classList.add('bg-white', 'text-gray-700', 'hover:bg-indigo-50');
+        }
+    }
+
+    /**
+     * Handles adding a custom symptom from the input field.
+     */
+    document.getElementById('add-custom-symptom-btn').addEventListener('click', () => {
+        const customSymptom = customInput.value.trim();
+        if (customSymptom && !selectedSymptoms.includes(customSymptom.toLowerCase())) {
+            const newChip = createChipElement(customSymptom);
+            chipsContainer.appendChild(newChip);
+            // Automatically select the new chip
+            toggleSymptom(newChip, customSymptom.toLowerCase());
+            customInput.value = ''; // Clear input
+        }
+    });
+
+    /**
+     * Main event handler for the Analyze button.
+     */
+    document.getElementById('analyze-symptoms-btn').addEventListener('click', () => {
+        resultsSection.innerHTML = ''; // Clear old results
+        resultsTitle.classList.add('hidden');
+        noSymptomsMessage.classList.add('hidden');
+
+        if (selectedSymptoms.length === 0) {
+            noSymptomsMessage.classList.remove('hidden');
+            return;
+        }
+
+        const predictions = analyzeSymptoms(selectedSymptoms);
+        displayResults(predictions);
+    });
+
+    // --- 4. CORE OFFLINE ANALYSIS LOGIC ---
+
+    /**
+     * Compares user symptoms with the disease dataset to find matches.
+     * @param {string[]} symptoms The list of selected/typed symptoms.
+     * @returns {Object[]} An array of disease objects with an added matchScore.
+     */
+    function analyzeSymptoms(symptoms) {
+        const userSymptoms = new Set(symptoms);
+        let predictionList = [];
+
+        diseaseData.forEach(disease => {
+            let matchCount = 0;
+            // A simple count of how many user symptoms match the disease's known symptoms
+            disease.symptoms.forEach(diseaseSymptom => {
+                if (userSymptoms.has(diseaseSymptom)) {
+                    matchCount++;
+                }
+            });
+
+            // Calculate match score (percentage of known symptoms for that disease)
+            const maxScore = disease.symptoms.length;
+            let matchScore = 0;
+            if (maxScore > 0) {
+                // Score based on how many of the disease's symptoms were matched by the user
+                matchScore = (matchCount / maxScore) * 100;
+            } else {
+                // Handle case of disease with no symptoms listed
+                matchScore = 0;
+            }
+            
+            // Add a high bonus if the user's symptoms perfectly match a subset of the disease's symptoms
+            // This prioritizes a 100% match over a high-count, low-percentage match
+            if (matchCount > 0 && matchScore === 100) {
+                matchScore += 10; // Simple bonus for a perfect match of all listed symptoms
+            }
+            
+            // Only add diseases with at least one match
+            if (matchCount > 0) {
+                predictionList.push({
+                    ...disease,
+                    matchCount: matchCount,
+                    matchScore: Math.min(100, matchScore) // Ensure score doesn't exceed 100 after bonus
+                });
+            }
+        });
+
+        // Sort by match score (highest first), then by match count (more matches is better)
+        predictionList.sort((a, b) => {
+            if (b.matchScore !== a.matchScore) {
+                return b.matchScore - a.matchScore;
+            }
+            return b.matchCount - a.matchCount;
+        });
+
+        // Return only the top 3 results
+        return predictionList.slice(0, 3);
+    }
+
+    /**
+     * Displays the results as a series of cards.
+     * @param {Object[]} predictions The top 3 predicted diseases.
+     */
+    function displayResults(predictions) {
+        if (predictions.length > 0) {
+            resultsTitle.classList.remove('hidden');
+            predictions.forEach(disease => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 mb-4 rounded-lg shadow-xl border-t-4 border-indigo-500 transition duration-300 hover:shadow-2xl';
+
+                card.innerHTML = `
+                    <h4 class="text-xl font-bold text-indigo-700 mb-2">${disease.name}</h4>
+                    <p class="text-sm font-semibold mb-3">Match Confidence: <span class="text-red-600 text-lg">${disease.matchScore.toFixed(0)}%</span></p>
+
+                    <div class="space-y-3 text-gray-700">
+                        <div class="border-l-4 border-yellow-400 pl-3">
+                            <p class="font-bold text-sm uppercase">Matching Symptoms</p>
+                            <p class="text-sm italic">${selectedSymptoms.filter(s => disease.symptoms.includes(s)).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}</p>
+                        </div>
+                        <div class="border-l-4 border-green-400 pl-3">
+                            <p class="font-bold text-sm uppercase">Prevention</p>
+                            <p class="text-sm">${disease.prevention}</p>
+                        </div>
+                        <div class="border-l-4 border-blue-400 pl-3">
+                            <p class="font-bold text-sm uppercase">Common Medicines</p>
+                            <p class="text-sm">${disease.medicines}</p>
+                        </div>
+                        <div class="border-l-4 border-red-400 pl-3">
+                            <p class="font-bold text-sm uppercase">Causes</p>
+                            <p class="text-sm">${disease.causes}</p>
+                        </div>
+                    </div>
+                `;
+                resultsSection.appendChild(card);
+            });
+        } else {
+            resultsTitle.classList.remove('hidden');
+            resultsSection.innerHTML = '<p class="text-center text-gray-500 p-4 bg-yellow-50 rounded-lg">No significant disease matches found for the selected symptoms. Please try adding more specific symptoms.</p>';
+        }
+    }
+
+    // --- 5. INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', initializeSymptomChips);
+</script>

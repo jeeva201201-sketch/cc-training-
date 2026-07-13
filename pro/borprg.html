@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style type="text/css">
+@font-face
+{
+	font-family:'Leaf';
+	src: url(Leafy-Regular.ttf);
+}
+
+.pro 
+{ 
+	float: right;
+	display: none;
+	list-style-type: none;
+}
+.div2
+{
+	display: none;
+	position: absolute;
+}
+.div2 a
+{
+  padding: 10px 15px;
+  display: block;
+  text-decoration: none;
+  color:white;
+  	background-color: #FF8DA1;
+}
+.dropdown1
+{
+  display: inline-block;
+  background-color: pink;
+}	
+.dropdown:hover .div1
+{
+	display: block;
+}	
+.div1
+{  
+	border: 1px solid pink;
+	display: none;
+	position: absolute;
+}
+
+.dropdown button
+{
+	
+	border-radius: 5px;
+	border: 1px solid white;
+	background-color:pink;
+	color: white;
+	font-weight: bold;
+	padding: 15px 15px;
+	
+}
+.dropdown1 button
+{
+	border-radius: 5px;
+	background-color:pink;
+	color: white;
+	font-weight: bold;
+	padding: 15px 15px;
+	border: 1px solid white;
+}
+.dropdown:hover.div1
+{
+	border: 2px solid black;
+	display: block;
+}
+.div1 a
+{
+  padding: 10px 15px;
+  display: block;
+  text-decoration: none;
+  color:white;
+  background-color: #FF8DA1;
+}
+.dropdown
+{
+
+  display: inline-block;
+  background-color: pink;
+}
+.cover
+{
+	border-radius: 10px;
+	padding: 4px;
+  text-align: right;
+	margin: 5px;
+ background-color: #FF8DA1;
+}
+
+.dropdown1:hover .div2 
+{
+display: block;
+}
+
+.programe :hover  
+{
+	color: white;
+	display: block;
+}
+.image
+{
+	position: absolute;
+	background-image: url("blossom.jpg");
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+  top: 0;
+  left:0 ;
+  width: 100%;
+  background-size: cover;
+  z-index: -1;
+  min-height: 100vh;
+  filter: blur(3px);
+}
+#e0
+{
+	margin-top: 5px;
+	font-family: casser,Verdana;
+	color: white;
+	margin: 0;
+	margin-right: 900px;
+	padding: 0;
+	display: inline-block;
+}
+#e1
+{ 
+	margin-top: 220px;
+	margin-left: 33%;
+	color: white;
+	font-family:Leaf;
+	font-weight: 500;
+	font-size: 98px;
+}
+</style>
+</head>
+<body>
+	<div class="image"></div>
+	<div class="cover">
+		<h1 id="e0">Attin</h1>
+
+<div class="dropdown">
+	<button>File</button>
+	<div class="div1">
+	  <a href="#">New </a>
+		<a href="#">Save</a>
+		<a href="#">Edit</a>
+		<a href="#">Open</a>
+	</div>
+</div>
+<div class="dropdown1">
+       <button id="e3">Programming language ▾</button>
+       <div class="div2">		 
+		<a href="#" class="programe">programe</a>
+		<a href="#" class="data">database</a>
+		<a href="#" >Frame Work</a>
+		<a href="#" >Frontend</a>
+		</div>
+		<div class="pro">
+		<li><a href="#">Java</a></li>
+		<li><a href="#"> C++ </a></li>
+		<li><a href="#"> C#</a></li>
+		</ul>
+		</div>
+</div>
+</div>
+</div>	
+  <h1 id="e1">Prunus<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serrulata</h1>
+</body>
+</html>

@@ -1,9 +1,0 @@
-#include <stdio.h>
-int main()
-{
- int main;
- scanf("%d",&main);
- (main%9==0)?printf("9"):printf("%d",(main%9));
-
-    
-}

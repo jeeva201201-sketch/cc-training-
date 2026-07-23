@@ -20,8 +20,9 @@ int descending(int ds[], int des) {
             }
         }
     }
-    return 0;
-}
+    return 0; 
+
+}[]
 int main() {
     int n;
      scanf("%d", &n);
